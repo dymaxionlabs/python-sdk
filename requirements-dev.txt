@@ -15,4 +15,6 @@
 # numpy==1.13.3
 # scipy==1.0
 #
-pre-commit
+pre-commit==1.18.3
+rope==0.14.0
+yapf==0.28.0
