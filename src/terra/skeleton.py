@@ -21,9 +21,9 @@ import logging
 
 from terra import __version__
 
-__author__ = "Gessica"
-__copyright__ = "Gessica"
-__license__ = "mit"
+__author__ = "Dymaxion Labs"
+__copyright__ = "Dymaxion Labs"
+__license__ = "apache-2.0"
 
 _logger = logging.getLogger(__name__)
 

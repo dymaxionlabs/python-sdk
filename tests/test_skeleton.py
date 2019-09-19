@@ -3,9 +3,9 @@
 import pytest
 from terra.skeleton import fib
 
-__author__ = "Gessica"
-__copyright__ = "Gessica"
-__license__ = "mit"
+__author__ = "Dymaxion Labs"
+__copyright__ = "Dymaxion Labs"
+__license__ = "apache-2.0"
 
 
 def test_fib():
