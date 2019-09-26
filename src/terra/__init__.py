@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 from pkg_resources import get_distribution, DistributionNotFound
 
 try:
@@ -9,3 +10,11 @@ except DistributionNotFound:
     __version__ = 'unknown'
 finally:
     del get_distribution, DistributionNotFound
+
+AUTH_TOKEN = os.getenv('TERRA_AUTH_TOKEN')
+
+API_KEY = os.getenv('TERRA_API_KEY')
+
+API_URL = os.getenv('TERRA_API_URL', 'https://api.dymaxionlabs.com')
+
+PROJECT_ID = os.getenv('TERRA_PROJECT_ID')
