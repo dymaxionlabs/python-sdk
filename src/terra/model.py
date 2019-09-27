@@ -6,7 +6,7 @@ import requests
 
 TERRA_PREDICT = '/estimators/{estimatorId}/predict/'
 TERRA_PREDICTED = '/estimators/{estimatorId}/predicted/'
-TERRA_PREDICTION_DETAIL = '/predictionjob/{estimatorId}'
+TERRA_PREDICTION_DETAIL = '/predictionjob/{predictionId}'
 
 
 class PredictionJob:
@@ -49,7 +49,7 @@ class PredictionJob:
             }
             url = '{url}{path}'.format(url=API_URL,
                                        path=TERRA_PREDICTION_DETAIL.format(
-                                           estimatorId=self.estimator))
+                                           predictionId=self.id))
             r = requests.get(url, headers=headers)
             data = json.loads(r.text)
             if data['finished']:
