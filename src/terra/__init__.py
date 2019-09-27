@@ -17,8 +17,6 @@ except DistributionNotFound:
 finally:
     del get_distribution, DistributionNotFound
 
-AUTH_TOKEN = os.getenv('TERRA_AUTH_TOKEN')
-
 API_KEY = os.getenv('TERRA_API_KEY')
 
 API_URL = os.getenv('TERRA_API_URL', 'https://api.dymaxionlabs.com')

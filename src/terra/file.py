@@ -1,4 +1,4 @@
-from . import AUTH_TOKEN, API_URL, API_KEY, PROJECT_ID
+from . import API_URL, API_KEY, PROJECT_ID
 
 import json
 import mimetypes
