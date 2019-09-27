@@ -1,4 +1,4 @@
-from . import AUTH_TOKEN, API_URL, API_KEY
+from . import AUTH_TOKEN, API_URL, API_KEY, PROJECT_ID
 from terra import file
 
 import json
@@ -7,6 +7,7 @@ import requests
 TERRA_PREDICT = '/estimators/{estimatorId}/predict/'
 TERRA_PREDICTED = '/estimators/{estimatorId}/predicted/'
 TERRA_PREDICTION_DETAIL = '/predictionjob/{predictionId}'
+TERRA_PROJECT_DETAIL = '/projects/{projectId}'
 
 
 class PredictionJob:
@@ -47,9 +48,9 @@ class PredictionJob:
                 'Authorization': 'Api-Key {}'.format(API_KEY),
                 'Accept-Language': 'es'
             }
-            url = '{url}{path}'.format(url=API_URL,
-                                       path=TERRA_PREDICTION_DETAIL.format(
-                                           predictionId=self.id))
+            url = '{url}{path}'.format(
+                url=API_URL,
+                path=TERRA_PREDICTION_DETAIL.format(predictionId=self.id))
             r = requests.get(url, headers=headers)
             data = json.loads(r.text)
             if data['finished']:
@@ -118,10 +119,6 @@ class Estimator:
 
     @classmethod
     def all(cls):
-        """Funcionality to obtain all uuid of estimators related to your project
-        
-        Returns a array with the uuid
-        """
         headers = {
             'Authorization': 'Api-Key {}'.format(API_KEY),
             'Accept-Language': 'es'
@@ -131,31 +128,3 @@ class Estimator:
             path=TERRA_PROJECT_DETAIL.format(projectId=PROJECT_ID))
         r = requests.get(url, headers=headers)
         return json.loads(r.text)['estimators']
-
-
-class Project:
-    #Class that represent a Project in DymaxionLabs's server
-
-    def __init__(self):
-        """Constructor
-
-        Uses the enviroment variable to create the object
-        """
-        self.uuid = PROJECT_ID
-
-    def files(self):
-        """Funcionality to obtain all info about the uploaded files related to your project 
-
-        Returns a array of File objects
-        """
-        headers = {
-            'Authorization': 'Api-Key {}'.format(API_KEY),
-            'Accept-Language': 'es'
-        }
-        url = '{url}{path}'.format(
-            url=API_URL, path=TERRA_PROJECT_FILES.format(projectId=self.uuid))
-        r = requests.get(url, headers=headers)
-        files = []
-        for v in json.loads(r.text)['results']:
-            files.append(File(self, v['name'], v['metadata']))
-        return files
