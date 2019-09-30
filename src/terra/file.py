@@ -10,6 +10,17 @@ TERRA_UPLOAD_FILE = '/files/upload/{file_name}?project_uuid={project_uuid}'
 TERRA_DOWNLOAD_FILE = '/files/download/{file_name}?project_uuid={project_uuid}'
 
 
+class File:
+    def __init__(self, project, name, url, metadata):
+        self.project = project
+        self.name = name
+        self.url = url
+        self.metadata = metadata
+
+    def download(output_dir):
+        download(self.name, output_dir)
+
+
 def upload(img_name):
     """Function to load a image
 
