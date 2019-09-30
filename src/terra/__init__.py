@@ -26,5 +26,3 @@ if API_KEY is None:
 PROJECT_ID = os.getenv('TERRA_PROJECT_ID')
 if PROJECT_ID is None:
     raise Exception('TERRA_PROJECT_ID not defined')
-
-
