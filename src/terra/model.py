@@ -43,13 +43,13 @@ class PredictionJob:
         if self.finished:
             return self.finished
         else:
-            headers = {'Authorization': 'Api-Key {}'.format(API_KEY), 'Accept-Language': 'es' }
-            url = '{url}{path}'.format(
-                url=API_URL, 
-                path=TERRA_PREDICTION_DETAIL.format(
-                    estimatorId=self.estimator
-                )
-            )
+            headers = {
+                'Authorization': 'Api-Key {}'.format(API_KEY),
+                'Accept-Language': 'es'
+            }
+            url = '{url}{path}'.format(url=API_URL,
+                                       path=TERRA_PREDICTION_DETAIL.format(
+                                           estimatorId=self.estimator))
             r = requests.get(url, headers=headers)
             data = json.loads(r.text)
             if data['finished']:
@@ -57,7 +57,7 @@ class PredictionJob:
                 self.results_files = data['result_files']
             return data['finished']
 
-    def download_results(self, output_dir = "."):
+    def download_results(self, output_dir="."):
         """Function to download the PredictionJob's results
 
         Downloads all the results in the destination that was provides
@@ -84,7 +84,7 @@ class Estimator:
         self.uuid = uuid
         self.prediction_job = None
 
-    def predict(self, preload_files = [], local_files = []):
+    def predict(self, preload_files=[], local_files=[]):
         """Funcionality to predict files
 
         This funcionality will use a trained model to detect object in the files that you provides
@@ -101,22 +101,19 @@ class Estimator:
             preload_files.append(f['name'])
 
         data = {'files': preload_files}
-        headers = {'Authorization': 'Api-Key {}'.format(API_KEY), 'Accept-Language': 'es' }
+        headers = {
+            'Authorization': 'Api-Key {}'.format(API_KEY),
+            'Accept-Language': 'es'
+        }
         url = '{url}{path}'.format(
-            url=API_URL, 
-            path=TERRA_PREDICT.format(
-                estimatorId=self.uuid
-            )
-        )
+            url=API_URL, path=TERRA_PREDICT.format(estimatorId=self.uuid))
         r = requests.post(url, json=data, headers=headers)
         data = json.loads(r.text)['detail']
-        self.prediction_job = PredictionJob(
-            id = data['id'],
-            estimator = data['estimator'],
-            finished = data['finished'],
-            image_files = data['image_files'],
-            result_files = data['result_files']
-        )
+        self.prediction_job = PredictionJob(id=data['id'],
+                                            estimator=data['estimator'],
+                                            finished=data['finished'],
+                                            image_files=data['image_files'],
+                                            result_files=data['result_files'])
         return self.prediction_job
 
     @classmethod
@@ -125,8 +122,13 @@ class Estimator:
         
         Returns a array with the uuid
         """
-        headers = {'Authorization': 'Api-Key {}'.format(API_KEY), 'Accept-Language': 'es' }
-        url = '{url}{path}'.format(url=API_URL, path=TERRA_PROJECT_DETAIL.format(projectId=PROJECT_ID))
+        headers = {
+            'Authorization': 'Api-Key {}'.format(API_KEY),
+            'Accept-Language': 'es'
+        }
+        url = '{url}{path}'.format(
+            url=API_URL,
+            path=TERRA_PROJECT_DETAIL.format(projectId=PROJECT_ID))
         r = requests.get(url, headers=headers)
         return json.loads(r.text)['estimators']
 
@@ -141,14 +143,17 @@ class Project:
         """
         self.uuid = PROJECT_ID
 
-
     def files(self):
         """Funcionality to obtain all info about the uploaded files related to your project 
 
         Returns a array of File objects
         """
-        headers = {'Authorization': 'Api-Key {}'.format(API_KEY), 'Accept-Language': 'es' }
-        url = '{url}{path}'.format(url=API_URL, path=TERRA_PROJECT_FILES.format(projectId=self.uuid))
+        headers = {
+            'Authorization': 'Api-Key {}'.format(API_KEY),
+            'Accept-Language': 'es'
+        }
+        url = '{url}{path}'.format(
+            url=API_URL, path=TERRA_PROJECT_FILES.format(projectId=self.uuid))
         r = requests.get(url, headers=headers)
         files = []
         for v in json.loads(r.text)['results']:

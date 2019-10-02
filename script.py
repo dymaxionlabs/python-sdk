@@ -10,7 +10,7 @@ def main():
     while not job.status():
         print("Waiting for results...")
         time.sleep(60)
-    
+
     job.download_results("./results")
 
 
