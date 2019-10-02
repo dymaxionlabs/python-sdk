@@ -1,9 +1,9 @@
-from src.terra.model import Estimator, Project
+from dymaxionlabs.model import Estimator, Project
 import time
 
 
 def main():
-    #Predict with a local file
+    # Predict with a local file
     model = Estimator('b4676699-27c8-4193-a24c-cffaf88cce92')
 
     job = model.predict(local_files=['img.jpg'])
@@ -14,7 +14,7 @@ def main():
 
     job.download_results("./results")
 
-    #Predict with uploaded files
+    # Predict with uploaded files
     project = Project()
     files = project.files()
 

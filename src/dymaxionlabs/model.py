@@ -1,15 +1,15 @@
 from . import API_URL, API_KEY, PROJECT_ID
-from terra import file
-from terra.file import File
+from dymaxionlabs import file
+from dymaxionlabs.file import File
 
 import json
 import requests
 
-TERRA_PREDICT = '/estimators/{estimatorId}/predict/'
-TERRA_PREDICTED = '/estimators/{estimatorId}/predicted/'
-TERRA_PREDICTION_DETAIL = '/predictionjob/{predictionId}'
-TERRA_PROJECT_DETAIL = '/projects/{projectId}'
-TERRA_PROJECT_FILES = '/files/?limit=1000&project_uuid={projectId}'
+DYM_PREDICT = '/estimators/{estimatorId}/predict/'
+DYM_PREDICTED = '/estimators/{estimatorId}/predicted/'
+DYM_PREDICTION_DETAIL = '/predictionjob/{predictionId}'
+DYM_PROJECT_DETAIL = '/projects/{projectId}'
+DYM_PROJECT_FILES = '/files/?limit=1000&project_uuid={projectId}'
 
 
 class PredictionJob:
@@ -52,7 +52,7 @@ class PredictionJob:
             }
             url = '{url}{path}'.format(
                 url=API_URL,
-                path=TERRA_PREDICTION_DETAIL.format(predictionId=self.id))
+                path=DYM_PREDICTION_DETAIL.format(predictionId=self.id))
             r = requests.get(url, headers=headers)
             data = json.loads(r.text)
             if data['finished']:
@@ -109,7 +109,7 @@ class Estimator:
             'Accept-Language': 'es'
         }
         url = '{url}{path}'.format(
-            url=API_URL, path=TERRA_PREDICT.format(estimatorId=self.uuid))
+            url=API_URL, path=DYM_PREDICT.format(estimatorId=self.uuid))
         r = requests.post(url, json=data, headers=headers)
         data = json.loads(r.text)['detail']
         self.prediction_job = PredictionJob(id=data['id'],
@@ -130,8 +130,7 @@ class Estimator:
             'Accept-Language': 'es'
         }
         url = '{url}{path}'.format(
-            url=API_URL,
-            path=TERRA_PROJECT_DETAIL.format(projectId=PROJECT_ID))
+            url=API_URL, path=DYM_PROJECT_DETAIL.format(projectId=PROJECT_ID))
         r = requests.get(url, headers=headers)
         return json.loads(r.text)['estimators']
 
@@ -154,7 +153,7 @@ class Project:
             'Accept-Language': 'es'
         }
         url = '{url}{path}'.format(
-            url=API_URL, path=TERRA_PROJECT_FILES.format(projectId=self.uuid))
+            url=API_URL, path=DYM_PROJECT_FILES.format(projectId=self.uuid))
         r = requests.get(url, headers=headers)
         files = []
         for v in json.loads(r.text)['results']:

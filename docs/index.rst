@@ -1,8 +1,8 @@
-=====
-terra
-=====
+============
+dymaxionlabs
+============
 
-This is the documentation of **terra**.
+This is the documentation of **dymaxionlabs**.
 
 .. note::
 

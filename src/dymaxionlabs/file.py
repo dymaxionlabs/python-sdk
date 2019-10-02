@@ -6,8 +6,8 @@ import requests
 import os
 import urllib3
 
-TERRA_UPLOAD_FILE = '/files/upload/{file_name}?project_uuid={project_uuid}'
-TERRA_DOWNLOAD_FILE = '/files/download/{file_name}?project_uuid={project_uuid}'
+DYM_UPLOAD_FILE = '/files/upload/{file_name}?project_uuid={project_uuid}'
+DYM_DOWNLOAD_FILE = '/files/download/{file_name}?project_uuid={project_uuid}'
 
 
 class File:
@@ -47,7 +47,7 @@ def upload(img_name):
             'Accept-Language': 'es',
             'Content-Type': mimetypes.MimeTypes().guess_type(img_name)[0]
         }
-        upload_url = TERRA_UPLOAD_FILE.format(
+        upload_url = DYM_UPLOAD_FILE.format(
             file_name=os.path.basename(img_name), project_uuid=PROJECT_ID)
         url = '{url}{path}'.format(url=API_URL, path=upload_url)
         with open(img_name, 'rb') as fp:
@@ -72,7 +72,7 @@ def download(img_name, output_dir="."):
         'Authorization': 'Api-Key {}'.format(API_KEY),
         'Accept-Language': 'es'
     }
-    download_url = TERRA_DOWNLOAD_FILE.format(
+    download_url = DYM_DOWNLOAD_FILE.format(
         file_name=os.path.basename(img_name), project_uuid=PROJECT_ID)
     url = '{url}{path}'.format(url=API_URL, path=download_url)
     r = requests.get(url, headers=headers)

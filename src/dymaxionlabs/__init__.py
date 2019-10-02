@@ -17,12 +17,12 @@ except DistributionNotFound:
 finally:
     del get_distribution, DistributionNotFound
 
-API_URL = os.getenv('TERRA_API_URL', 'https://api.dymaxionlabs.com')
+API_URL = os.getenv('DYM_API_URL', 'https://api.dymaxionlabs.com')
 
-API_KEY = os.getenv('TERRA_API_KEY')
+API_KEY = os.getenv('DYM_API_KEY')
 if API_KEY is None:
-    raise Exception('TERRA_API_KEY not defined')
+    raise Exception('DYM_API_KEY not defined')
 
-PROJECT_ID = os.getenv('TERRA_PROJECT_ID')
+PROJECT_ID = os.getenv('DYM_PROJECT_ID')
 if PROJECT_ID is None:
-    raise Exception('TERRA_PROJECT_ID not defined')
+    raise Exception('DYM_PROJECT_ID not defined')

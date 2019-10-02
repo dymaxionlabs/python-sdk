@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    Setup file for terra.
+    Setup file for dymaxionlabs.
     Use setup.cfg to configure your project.
 
     This file was generated with PyScaffold 3.2.2.
@@ -17,7 +17,6 @@ try:
 except VersionConflict:
     print("Error: version of setuptools is too old (<38.3)!")
     sys.exit(1)
-
 
 if __name__ == "__main__":
     setup(use_pyscaffold=True)
