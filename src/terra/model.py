@@ -1,5 +1,5 @@
 from . import AUTH_TOKEN, API_URL, API_KEY
-from src.terra import file
+from terra import file
 
 import json
 import requests
