@@ -13,6 +13,8 @@ TERRA_DOWNLOAD_FILE = '/files/download/{file_name}?project_uuid={project_uuid}'
 def upload(img_name):
     """Function to load a image
 
+    Returns the detail of the object that was created in DymaxionLabs's server
+
     Keyword arguments:
     img_name -- image local path
     """
@@ -44,7 +46,7 @@ def download(img_name, output_dir="."):
 
     Keyword arguments:
     img_name -- image name
-    output_dir -- destination folder for download the image
+    output_dir -- local destination to store the image
     """
     if not os.path.exists(output_dir): 
         os.makedirs(output_dir)

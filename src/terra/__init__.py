@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
+Package to integrate the DymaxionLabs's funcionality:
+    -Upload images
+    -Predict imagenes based in object detection models
+    -Download results
+"""
 import os
 from pkg_resources import get_distribution, DistributionNotFound
 
