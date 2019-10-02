@@ -11,13 +11,24 @@ TERRA_DOWNLOAD_FILE = '/files/download/{file_name}?project_uuid={project_uuid}'
 
 
 class File:
-    def __init__(self, project, name, url, metadata):
+    def __init__(self, project, name, metadata):
+        """Constructor
+
+        Keyword arguments:
+        project -- related project
+        name -- image's name in DymaxionLabs's server
+        metada -- image metada
+        """
         self.project = project
         self.name = name
-        self.url = url
         self.metadata = metadata
 
     def download(output_dir):
+        """Function to download the image
+
+        Keyword arguments:
+        output_dir -- local destination to store the image
+        """
         download(self.name, output_dir)
 
 

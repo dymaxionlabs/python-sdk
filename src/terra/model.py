@@ -16,7 +16,7 @@ class PredictionJob:
     """
     Class that represent a PredictionJob in DymaxionLabs's server
 
-    A PredictionJob is a job that can detect object in your 
+    A PredictionJob is a job that can detect object in your
     images with a model trained previously
     """
     def __init__(self, id, estimator, finished, image_files, result_files):
@@ -121,6 +121,10 @@ class Estimator:
 
     @classmethod
     def all(cls):
+        """Funcionality to obtain all uuid of estimators related to your project
+
+        Returns a array with the uuid
+        """
         headers = {
             'Authorization': 'Api-Key {}'.format(API_KEY),
             'Accept-Language': 'es'
@@ -134,9 +138,17 @@ class Estimator:
 
 class Project:
     def __init__(self):
+        """Constructor
+
+        Uses the enviroment variable to create the object
+        """
         self.uuid = PROJECT_ID
 
     def files(self):
+        """Funcionality to obtain all info about the uploaded files related to your project
+
+        Returns a array of File objects
+        """
         headers = {
             'Authorization': 'Api-Key {}'.format(API_KEY),
             'Accept-Language': 'es'
@@ -146,5 +158,5 @@ class Project:
         r = requests.get(url, headers=headers)
         files = []
         for v in json.loads(r.text)['results']:
-            files.append(File(self, v['name'], v['file'], v['metadata']))
+            files.append(File(self, v['name'], v['metadata']))
         return files
