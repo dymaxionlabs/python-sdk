@@ -23,7 +23,9 @@ Instalation
 
 Install the latest client library via pip
 
-pip install dymaxionlabs
+.. code-block:: bash
+
+    pip install dymaxionlabs
 
 
 Authentication
@@ -72,7 +74,7 @@ or use the previously uploaded
 
 .. code-block:: python
 
-    from dymaxionlabs.model import Project
+    from dymaxionlabs.model import Estimator, Project 
     import time
 
     project = Project()
