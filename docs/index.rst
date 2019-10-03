@@ -2,25 +2,91 @@
 dymaxionlabs
 ============
 
-This is the documentation of **dymaxionlabs**.
+Introduction
+============
 
-.. note::
 
-    This is the main page of your project's `Sphinx`_ documentation.
-    It is formatted in `reStructuredText`_. Add additional pages
-    by creating rst-files in ``docs`` and adding them to the `toctree`_ below.
-    Use then `references`_ in order to link them from this page, e.g.
-    :ref:`authors` and :ref:`changes`.
 
-    It is also possible to refer to the documentation of other Python packages
-    with the `Python domain syntax`_. By default you can reference the
-    documentation of `Sphinx`_, `Python`_, `NumPy`_, `SciPy`_, `matplotlib`_,
-    `Pandas`_, `Scikit-Learn`_. You can add more by extending the
-    ``intersphinx_mapping`` in your Sphinx's ``conf.py``.
+Features
+========
+DymaxionLabs's funcionality:
 
-    The pretty useful extension `autodoc`_ is activated by default and lets
-    you include documentation from docstrings. Docstrings can be written in
-    `Google style`_ (recommended!), `NumPy style`_ and `classical style`_.
+   Upload images.
+
+   Predict imagenes based in object detection models.
+
+   Download results.
+
+
+Instalation
+===========
+
+Install the latest client library via pip
+
+pip install dymaxionlabs
+
+
+Authentication
+==============
+
+Sing up at `<https://app.dymaxionlabs.com>`_  if you don't have a user yet. Or log in if you have it.
+
+Enter in the API Key section and create a nuevo API Key. Copy the generated key and set this as a enviroment variable called DYM_API_URL
+
+You is already available to use the functionalities from the client
+
+Examples
+========
+
+For create instances of models or project you have to know their uuid. 
+
+About the models you can obtaing that information in the models section 
+of our app https://app.dymaxionlabs.com/home/models .
+You have to pass this uuid to the constructor of your model instance
+
+And for projects you have to visitr your home page https://app.dymaxionlabs.com/home 
+and there you can see the uuid of the project that you had selected
+You have to set this uuid as a environment variable called DYM_PROJECT_ID 
+and the Project will use it for create the instance
+
+
+You can predict objects in yours locales images
+
+.. code-block:: python
+
+    from dymaxionlabs.model import Estimator
+    import time
+
+    model = Estimator('b4676699-27c8-4193-a24c-cffaf88cce92')
+
+    job = model.predict(local_files=['img.jpg'])
+
+    while not job.status():
+        print("Waiting for results...")
+        time.sleep(60)
+
+    job.download_results("./results")
+
+or use the previously uploaded
+
+
+.. code-block:: python
+
+    from dymaxionlabs.model import Project
+    import time
+
+    project = Project()
+    files = project.files()
+
+    model = Estimator('b4676699-27c8-4193-a24c-cffaf88cce92')
+
+    job = model.predict(preload_files=[files[0].name])
+
+    while not job.status():
+        print("Waiting for seconds results...")
+        time.sleep(60)
+
+    job.download_results("./results")
 
 
 Contents
