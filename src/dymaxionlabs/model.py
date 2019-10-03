@@ -46,6 +46,7 @@ class PredictionJob:
         if self.finished:
             return self.finished
         else:
+            if API_KEY is None: raise Exception('DYM_API_KEY not defined')
             headers = {
                 'Authorization': 'Api-Key {}'.format(API_KEY),
                 'Accept-Language': 'es'
@@ -87,7 +88,7 @@ class Estimator:
         self.uuid = uuid
         self.prediction_job = None
 
-    def predict(self, preload_files=[], local_files=[]):
+    def predict_files(self, preload_files=[], local_files=[]):
         """Funcionality to predict files
 
         This funcionality will use a trained model to detect object in the files that you provides
@@ -104,6 +105,7 @@ class Estimator:
             preload_files.append(f['name'])
 
         data = {'files': preload_files}
+        if API_KEY is None: raise Exception('DYM_API_KEY not defined')
         headers = {
             'Authorization': 'Api-Key {}'.format(API_KEY),
             'Accept-Language': 'es'
@@ -125,10 +127,12 @@ class Estimator:
 
         Returns a array with the uuid
         """
+        if API_KEY is None: raise Exception('DYM_API_KEY not defined')
         headers = {
             'Authorization': 'Api-Key {}'.format(API_KEY),
             'Accept-Language': 'es'
         }
+        if PROJECT_ID is None: raise Exception('DYM_PROJECT_ID not defined')
         url = '{url}{path}'.format(
             url=API_URL, path=DYM_PROJECT_DETAIL.format(projectId=PROJECT_ID))
         r = requests.get(url, headers=headers)
@@ -141,6 +145,7 @@ class Project:
 
         Uses the enviroment variable to create the object
         """
+        if PROJECT_ID is None: raise Exception('DYM_PROJECT_ID not defined')
         self.uuid = PROJECT_ID
 
     def files(self):
@@ -148,6 +153,7 @@ class Project:
 
         Returns a array of File objects
         """
+        if API_KEY is None: raise Exception('DYM_API_KEY not defined')
         headers = {
             'Authorization': 'Api-Key {}'.format(API_KEY),
             'Accept-Language': 'es'

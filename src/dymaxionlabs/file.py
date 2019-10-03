@@ -42,11 +42,13 @@ def upload(img_name):
     """
     if os.path.isfile(img_name) and os.access(img_name, os.R_OK):
         http = urllib3.PoolManager()
+        if API_KEY is None: raise Exception('DYM_API_KEY not defined')
         headers = {
             'Authorization': 'Api-Key {}'.format(API_KEY),
             'Accept-Language': 'es',
             'Content-Type': mimetypes.MimeTypes().guess_type(img_name)[0]
         }
+        if PROJECT_ID is None: raise Exception('DYM_PROJECT_ID not defined')
         upload_url = DYM_UPLOAD_FILE.format(
             file_name=os.path.basename(img_name), project_uuid=PROJECT_ID)
         url = '{url}{path}'.format(url=API_URL, path=upload_url)
@@ -67,11 +69,12 @@ def download(img_name, output_dir="."):
     """
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-
+    if API_KEY is None: raise Exception('DYM_API_KEY not defined')
     headers = {
         'Authorization': 'Api-Key {}'.format(API_KEY),
         'Accept-Language': 'es'
     }
+    if PROJECT_ID is None: raise Exception('DYM_PROJECT_ID not defined')
     download_url = DYM_DOWNLOAD_FILE.format(
         file_name=os.path.basename(img_name), project_uuid=PROJECT_ID)
     url = '{url}{path}'.format(url=API_URL, path=download_url)
