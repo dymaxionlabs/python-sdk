@@ -55,8 +55,8 @@ You can also do this from Python:
 
   import os
 
-  os.setenv("DYM_API_KEY", "[INSERT_API_KEY]")
-  os.setenv("DYM_PROJECT_ID", "[INSERT_PROJECT_ID]")
+  os.environ["DYM_API_KEY"] = "insert-api-key"
+  os.environ["DYM_PROJECT_ID"] = "insert-project-id"
 
 
 From now on, you have full access to the Dymaxion Labs API from Python.
