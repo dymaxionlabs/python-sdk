@@ -22,12 +22,12 @@ class PredictionJob:
     def __init__(self, id, estimator, finished, image_files, result_files):
         """Constructor
 
-        Keyword arguments:
-        id -- PredictionJob pk in Dymaxionlabs's server
-        estimator -- related estimator
-        finished -- PredictionJob's state
-        image_files -- array of strings that contains the names of image to predict
-        results_files -- array of strings that contains the names of results
+        Args:
+            id: PredictionJob pk in Dymaxionlabs's server
+            estimator: related estimator
+            finished: PredictionJob's state
+            image_files: array of strings that contains the names of image to predict
+            results_files: array of strings that contains the names of results
         """
         self.id = id
         self.estimator = estimator
@@ -41,7 +41,8 @@ class PredictionJob:
         If the object's status is false requests updated information to DymaxionLabs's server
         for actualize it
 
-        Returns a boolean that represents the status
+        Returns:
+            Returns a boolean that represents the status
         """
         if self.finished:
             return self.finished
@@ -65,8 +66,8 @@ class PredictionJob:
 
         Downloads all the results in the destination that was provides
 
-        Keyword arguments:
-        output_dir -- local destination to store the image
+        Args:
+            output_dir: local destination to store the image
         """
         if self.status():
             for f in self.results_files:
@@ -80,9 +81,9 @@ class Estimator:
     def __init__(self, uuid):
         """Constructor
 
-        Keyword arguments:
-        uuid -- Estiamtor uuid in Dymaxionlabs's server
-        prediction_job -- related PredictionJob
+        Args:
+            uuid: Estiamtor uuid in Dymaxionlabs's server
+            prediction_job: related PredictionJob
         """
         self.uuid = uuid
         self.prediction_job = None
@@ -93,11 +94,12 @@ class Estimator:
         This funcionality will use a trained model to detect object in the files that you provides
         The local files will be uploaded before to predict
 
-        Returns info about the PredictionJob started
+        Args:
+            preload_files: array of string with the names of files that was already loaded in DymaxionLabs's server
+            local_files: array of string with the names of local files
 
-        Keyword arguments:
-        preload_files -- array of string with the names of files that was already loaded in DymaxionLabs's server
-        local_files -- array of string with the names of local files
+        Returns:
+            Returns a dict with info about the PredictionJob started
         """
         for local_file in local_files:
             f = file.upload(local_file)
@@ -123,7 +125,8 @@ class Estimator:
     def all(cls):
         """Funcionality to obtain all uuid of estimators related to your project
 
-        Returns a array with the uuid
+        Returns:
+            Returns a array with the uuid
         """
         headers = {
             'Authorization': 'Api-Key {}'.format(get_api_key()),
@@ -147,7 +150,8 @@ class Project:
     def files(self):
         """Funcionality to obtain all info about the uploaded files related to your project
 
-        Returns a array of File objects
+        Returns:
+            Returns a array of File objects
         """
         headers = {
             'Authorization': 'Api-Key {}'.format(get_api_key()),
