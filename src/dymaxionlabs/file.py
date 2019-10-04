@@ -30,6 +30,9 @@ class File:
         """
         download(self.name, output_dir)
 
+    def __repr__(self):
+        return "<dymaxionlabs.file.File name=\"{name}\"".format(name=self.name)
+
 
 def upload(img_name):
     """Function to load a image
