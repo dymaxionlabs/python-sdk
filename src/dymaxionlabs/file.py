@@ -1,10 +1,9 @@
-from . import API_URL, API_KEY, PROJECT_ID
-
 import json
 import mimetypes
 import requests
 import os
 import urllib3
+from dymaxionlabs.utils import get_api_url, get_api_key, get_project_id
 
 DYM_UPLOAD_FILE = '/files/upload/{file_name}?project_uuid={project_uuid}'
 DYM_DOWNLOAD_FILE = '/files/download/{file_name}?project_uuid={project_uuid}'
@@ -42,16 +41,15 @@ def upload(img_name):
     """
     if os.path.isfile(img_name) and os.access(img_name, os.R_OK):
         http = urllib3.PoolManager()
-        if API_KEY is None: raise Exception('DYM_API_KEY not defined')
         headers = {
-            'Authorization': 'Api-Key {}'.format(API_KEY),
+            'Authorization': 'Api-Key {}'.format(get_api_key()),
             'Accept-Language': 'es',
             'Content-Type': mimetypes.MimeTypes().guess_type(img_name)[0]
         }
-        if PROJECT_ID is None: raise Exception('DYM_PROJECT_ID not defined')
         upload_url = DYM_UPLOAD_FILE.format(
-            file_name=os.path.basename(img_name), project_uuid=PROJECT_ID)
-        url = '{url}{path}'.format(url=API_URL, path=upload_url)
+            file_name=os.path.basename(img_name),
+            project_uuid=get_project_id())
+        url = '{url}{path}'.format(url=get_api_url(), path=upload_url)
         with open(img_name, 'rb') as fp:
             file_data = fp.read()
         r = http.request('POST', url, body=file_data, headers=headers)
@@ -69,15 +67,13 @@ def download(img_name, output_dir="."):
     """
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-    if API_KEY is None: raise Exception('DYM_API_KEY not defined')
     headers = {
-        'Authorization': 'Api-Key {}'.format(API_KEY),
+        'Authorization': 'Api-Key {}'.format(get_api_key()),
         'Accept-Language': 'es'
     }
-    if PROJECT_ID is None: raise Exception('DYM_PROJECT_ID not defined')
     download_url = DYM_DOWNLOAD_FILE.format(
-        file_name=os.path.basename(img_name), project_uuid=PROJECT_ID)
-    url = '{url}{path}'.format(url=API_URL, path=download_url)
+        file_name=os.path.basename(img_name), project_uuid=get_project_id())
+    url = '{url}{path}'.format(url=get_api_url(), path=download_url)
     r = requests.get(url, headers=headers)
     output_file = os.path.sep.join([output_dir, img_name])
     with open(output_file, 'wb') as f:

@@ -1,6 +1,6 @@
-from . import API_URL, API_KEY, PROJECT_ID
 from dymaxionlabs import file
 from dymaxionlabs.file import File
+from dymaxionlabs.utils import get_api_url, get_api_key, get_project_id
 
 import json
 import requests
@@ -46,13 +46,12 @@ class PredictionJob:
         if self.finished:
             return self.finished
         else:
-            if API_KEY is None: raise Exception('DYM_API_KEY not defined')
             headers = {
-                'Authorization': 'Api-Key {}'.format(API_KEY),
+                'Authorization': 'Api-Key {}'.format(get_api_key()),
                 'Accept-Language': 'es'
             }
             url = '{url}{path}'.format(
-                url=API_URL,
+                url=get_api_url(),
                 path=DYM_PREDICTION_DETAIL.format(predictionId=self.id))
             r = requests.get(url, headers=headers)
             data = json.loads(r.text)
@@ -105,13 +104,12 @@ class Estimator:
             preload_files.append(f['name'])
 
         data = {'files': preload_files}
-        if API_KEY is None: raise Exception('DYM_API_KEY not defined')
         headers = {
-            'Authorization': 'Api-Key {}'.format(API_KEY),
+            'Authorization': 'Api-Key {}'.format(get_api_key()),
             'Accept-Language': 'es'
         }
         url = '{url}{path}'.format(
-            url=API_URL, path=DYM_PREDICT.format(estimatorId=self.uuid))
+            url=get_api_url(), path=DYM_PREDICT.format(estimatorId=self.uuid))
         r = requests.post(url, json=data, headers=headers)
         data = json.loads(r.text)['detail']
         self.prediction_job = PredictionJob(id=data['id'],
@@ -127,14 +125,13 @@ class Estimator:
 
         Returns a array with the uuid
         """
-        if API_KEY is None: raise Exception('DYM_API_KEY not defined')
         headers = {
-            'Authorization': 'Api-Key {}'.format(API_KEY),
+            'Authorization': 'Api-Key {}'.format(get_api_key()),
             'Accept-Language': 'es'
         }
-        if PROJECT_ID is None: raise Exception('DYM_PROJECT_ID not defined')
         url = '{url}{path}'.format(
-            url=API_URL, path=DYM_PROJECT_DETAIL.format(projectId=PROJECT_ID))
+            url=get_api_url(),
+            path=DYM_PROJECT_DETAIL.format(projectId=get_project_id()))
         r = requests.get(url, headers=headers)
         return json.loads(r.text)['estimators']
 
@@ -145,21 +142,20 @@ class Project:
 
         Uses the enviroment variable to create the object
         """
-        if PROJECT_ID is None: raise Exception('DYM_PROJECT_ID not defined')
-        self.uuid = PROJECT_ID
+        self.uuid = get_project_id()
 
     def files(self):
         """Funcionality to obtain all info about the uploaded files related to your project
 
         Returns a array of File objects
         """
-        if API_KEY is None: raise Exception('DYM_API_KEY not defined')
         headers = {
-            'Authorization': 'Api-Key {}'.format(API_KEY),
+            'Authorization': 'Api-Key {}'.format(get_api_key()),
             'Accept-Language': 'es'
         }
         url = '{url}{path}'.format(
-            url=API_URL, path=DYM_PROJECT_FILES.format(projectId=self.uuid))
+            url=get_api_url(),
+            path=DYM_PROJECT_FILES.format(projectId=self.uuid))
         r = requests.get(url, headers=headers)
         files = []
         for v in json.loads(r.text)['results']:
