@@ -2,26 +2,27 @@
 dymaxionlabs
 ============
 
-Introduction
-============
-
+This is the Python package for accessing the Dymaxion Labs Platform.
 
 
 Features
 ========
-DymaxionLabs's funcionality:
 
-   Upload images.
+The Dymaxion Labs Platform allows you:
 
-   Predict imagenes based in object detection models.
+ - Download and upload satellite and drone images.
+ - Train machine learning models for object detection, segmentation, change
+   detection, and more.
+ - Work your data using a REST API and Python.
 
-   Download results.
+This is a publicly installable package. However, if you want access to our full
+Platform, you will need to create a Dymaxion Labs account.
 
 
-Instalation
-===========
+Install
+=======
 
-Install the latest client library via pip
+Install the latest client package via pip:
 
 .. code-block:: bash
 
@@ -31,63 +32,87 @@ Install the latest client library via pip
 Authentication
 ==============
 
-Sing up at `<https://app.dymaxionlabs.com>`_  if you don't have a user yet. Or log in if you have it.
+Sing up at https://app.dymaxionlabs.com/signup if you don't have a user yet,
+otherwise log in.
 
-Enter in the API Key section and create a nuevo API Key. Copy the generated key and set this as a enviroment variable called DYM_API_URL
+When entering the first time, you will be asked to create a new Project. After
+nameing your project you will enter the main dashboard.  Take note of your
+Project Id.
 
-You is already available to use the functionalities from the client
+Now enter the API Key section, create a new API key and copy the generated key.
+
+You need to set both keys as environment variables, like this:
+
+.. code-block:: bash
+
+  export DYM_API_KEY=...
+  export DYM_PROJECT_ID=...
+
+
+You can also do this from Python:
+
+.. code-block:: python
+
+  import os
+
+  os.setenv("DYM_API_KEY", "[INSERT_API_KEY]")
+  os.setenv("DYM_PROJECT_ID", "[INSERT_PROJECT_ID]")
+
+
+From now on, you have full access to the Dymaxion Labs API from Python.
+
 
 Examples
 ========
 
-For create instances of models or project you have to know their uuid. 
+To use your models for predicting, you have to know their UUID.
 
-About the models you can obtaing that information in the models section 
-of our app https://app.dymaxionlabs.com/home/models .
-You have to pass this uuid to the constructor of your model instance
+You can obtain this by visiting the models page:
+https://app.dymaxionlabs.com/home/models.
+Click on the Edit button of your model, then on Show UUID menu option. Copy
+this and pass it as parameter to the ``Estimator`` constructor.
 
-And for projects you have to visitr your home page https://app.dymaxionlabs.com/home 
-and there you can see the uuid of the project that you had selected
-You have to set this uuid as a environment variable called DYM_PROJECT_ID 
-and the Project will use it for create the instance
-
-
-You can predict objects in yours locales images
+You can predict objects in local images. For example, if you have ``img.jpg``:
 
 .. code-block:: python
 
-    from dymaxionlabs.model import Estimator
     import time
+    from dymaxionlabs.model import Estimator
 
     model = Estimator('b4676699-27c8-4193-a24c-cffaf88cce92')
 
-    job = model.predict(local_files=['img.jpg'])
+    job = model.predict_files(local_files=['./img.jpg'])
 
+    # Wait for results
     while not job.status():
         print("Waiting for results...")
         time.sleep(60)
 
+    # Download results to ./results directory (will be created if not exists)
     job.download_results("./results")
 
-or use the previously uploaded
 
+or use previously uploaded files (*remote*)
 
 .. code-block:: python
 
-    from dymaxionlabs.model import Estimator, Project 
+    from dymaxionlabs.model import Estimator, Project
     import time
 
     project = Project()
     files = project.files()
+    first_file = files[0]
 
     model = Estimator('b4676699-27c8-4193-a24c-cffaf88cce92')
 
-    job = model.predict(preload_files=[files[0].name])
+    job = model.predict_files(preload_files=[first_file.name])
 
+    # Wait for results
     while not job.status():
         print("Waiting for seconds results...")
         time.sleep(60)
 
+    # Download results to ./results directory (will be created if not exists)
     job.download_results("./results")
 
 
