@@ -13,10 +13,10 @@ class File:
     def __init__(self, project, name, metadata):
         """Constructor
 
-        Keyword arguments:
-        project -- related project
-        name -- image's name in DymaxionLabs's server
-        metada -- image metada
+        Args:
+            project: related project
+            name: image's name in DymaxionLabs's server
+            metada: image metada
         """
         self.project = project
         self.name = name
@@ -25,8 +25,11 @@ class File:
     def download(output_dir):
         """Function to download the image
 
-        Keyword arguments:
-        output_dir -- local destination to store the image
+        Receive the path of a directory in which the results of the job will be stored, 
+        if the directory does not exist it will be created
+        
+        Args:
+            output_dir: local destination to store the image
         """
         download(self.name, output_dir)
 
@@ -37,10 +40,16 @@ class File:
 def upload(img_name):
     """Function to load a image
 
-    Returns the detail of the object that was created in DymaxionLabs's server
+    Upload de local file recived
 
-    Keyword arguments:
-    img_name -- image local path
+    Args:
+        img_name -- image local path
+
+    Returns:
+        Returns the detail of the object that was created in DymaxionLabs's server
+
+    Raises:
+        FileExistsError: The img_name argument does not correspond to an existing file
     """
     if os.path.isfile(img_name) and os.access(img_name, os.R_OK):
         http = urllib3.PoolManager()
@@ -64,9 +73,12 @@ def upload(img_name):
 def download(img_name, output_dir="."):
     """Function to download a image
 
-    Keyword arguments:
-    img_name -- image name
-    output_dir -- local destination to store the image
+    Receive the path of a directory in which the image will be stored, 
+    if the directory does not exist it will be created
+
+    Args:
+        img_name: image name
+        output_dir: local destination to store the image
     """
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
