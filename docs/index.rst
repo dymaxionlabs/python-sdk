@@ -105,7 +105,7 @@ or use previously uploaded files (*remote*)
 
     model = Estimator('b4676699-27c8-4193-a24c-cffaf88cce92')
 
-    job = model.predict_files(preload_files=[first_file.name])
+    job = model.predict_files(remote_files=[first_file.name])
 
     # Wait for results
     while not job.status():

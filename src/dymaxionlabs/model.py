@@ -88,14 +88,14 @@ class Estimator:
         self.uuid = uuid
         self.prediction_job = None
 
-    def predict_files(self, preload_files=[], local_files=[]):
+    def predict_files(self, remote_files=[], local_files=[]):
         """Funcionality to predict files
 
         This funcionality will use a trained model to detect object in the files that you provides
         The local files will be uploaded before to predict
 
         Args:
-            preload_files: array of string with the names of files that was already loaded in DymaxionLabs's server
+            remote_files: array of string with the names of files that was already loaded in DymaxionLabs's server
             local_files: array of string with the names of local files
 
         Returns:
@@ -103,9 +103,9 @@ class Estimator:
         """
         for local_file in local_files:
             f = file.upload(local_file)
-            preload_files.append(f['name'])
+            remote_files.append(f['name'])
 
-        data = {'files': preload_files}
+        data = {'files': remote_files}
         headers = {
             'Authorization': 'Api-Key {}'.format(get_api_key()),
             'Accept-Language': 'es'
