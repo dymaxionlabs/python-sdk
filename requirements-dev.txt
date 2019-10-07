@@ -18,4 +18,5 @@
 pre-commit==1.18.3
 rope==0.14.0
 yapf==0.28.0
-sphinx==2.2.0
+sphinx==1.8.5
+sphinx_rtd_theme==0.4.3
