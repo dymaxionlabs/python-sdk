@@ -77,7 +77,7 @@ You can predict objects in local images. For example, if you have ``img.jpg``:
 .. code-block:: python
 
     import time
-    from dymaxionlabs.model import Estimator
+    from dymaxionlabs.models import Estimator
 
     model = Estimator('b4676699-27c8-4193-a24c-cffaf88cce92')
 
@@ -96,8 +96,8 @@ or use previously uploaded files (*remote*)
 
 .. code-block:: python
 
-    from dymaxionlabs.model import Estimator, Project
     import time
+    from dymaxionlabs.models import Estimator, Project
 
     project = Project()
     files = project.files()
