@@ -13,17 +13,17 @@ DYM_PROJECT_FILES = '/files/?limit=1000&project_uuid={projectId}'
 
 class PredictionJob:
     """
-    Class that represent a PredictionJob in DymaxionLabs's server
+    Class that represents a PredictionJob in DymaxionLabs API
 
-    A PredictionJob is a job that can detect object in your
-    images with a model trained previously
+    A PredictionJob is a background job that performs the prediction using a
+    previously trained Estimator and your uploaded images.
     """
     def __init__(self, id, estimator, finished, image_files, result_files):
         """Constructor
 
         Args:
-            id: PredictionJob pk in Dymaxionlabs's server
-            estimator: related estimator
+            id: PredictionJob id
+            estimator: related estimator instance
             finished: PredictionJob's state
             image_files: array of strings that contains the names of image to predict
             results_files: array of strings that contains the names of results
@@ -35,13 +35,10 @@ class PredictionJob:
         self.results_files = result_files
 
     def status(self):
-        """Function to know the PredictionJob's status
-
-        If the object's status is false requests updated information to DymaxionLabs's server
-        for actualize it
+        """Get status of a PredictionJob
 
         Returns:
-            Returns a boolean that represents the status
+            Returns a boolean whether the job finished or not
         """
         if self.finished:
             return self.finished
@@ -61,12 +58,10 @@ class PredictionJob:
             return data['finished']
 
     def download_results(self, output_dir="."):
-        """Function to download the PredictionJob's results
-
-        Downloads all the results in the destination that was provides
+        """Download results from a finished PredictionJob
 
         Args:
-            output_dir: local destination to store the image
+            output_dir: path for storing results
         """
         if self.status():
             for f in self.results_files:
@@ -75,30 +70,32 @@ class PredictionJob:
 
 class Estimator:
     """
-    Class that represent a Estimator in DymaxionLabs's server
+    Class that represents an Estimator in DymaxionLabs API
     """
     def __init__(self, uuid):
         """Constructor
 
         Args:
-            uuid: Estiamtor uuid in Dymaxionlabs's server
+            uuid: Estiamtor uuid
             prediction_job: related PredictionJob
         """
         self.uuid = uuid
         self.prediction_job = None
 
     def predict_files(self, remote_files=[], local_files=[]):
-        """Funcionality to predict files
+        """Predict files
 
-        This funcionality will use a trained model to detect object in the files that you provides
-        The local files will be uploaded before to predict
+        This function will start a prediction job over the specified files.
+        You can predict over already upload images by providing a list of
+        +remote_files+, or over images in your disk by providing a list of
+        +local_files+.  Local files will be uploaded before prediction.
 
         Args:
-            remote_files: array of string with the names of files that was already loaded in DymaxionLabs's server
+            remote_files: array of string with the names of already uploaded files
             local_files: array of string with the names of local files
 
         Returns:
-            Returns a dict with info about the PredictionJob started
+            Returns a dict with info about the new PredictionJob
         """
         for local_file in local_files:
             f = file.upload(local_file)
@@ -122,10 +119,10 @@ class Estimator:
 
     @classmethod
     def all(cls):
-        """Funcionality to obtain all uuid of estimators related to your project
+        """Obtain all UUIDs of estimators from your project
 
         Returns:
-            Returns a array with the uuid
+            Returns an array of UUIDs
         """
         headers = {
             'Authorization': 'Api-Key {}'.format(get_api_key()),
@@ -142,12 +139,12 @@ class Project:
     def __init__(self):
         """Constructor
 
-        Uses the enviroment variable to create the object
+        Uses the environment variable to create the object
         """
         self.uuid = get_project_id()
 
     def files(self):
-        """Funcionality to obtain all info about the uploaded files related to your project
+        """Obtain all info about the uploaded files from your project
 
         Returns:
             Returns a array of File objects

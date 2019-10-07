@@ -23,13 +23,12 @@ class File:
         self.metadata = metadata
 
     def download(output_dir):
-        """Function to download the image
+        """Download file and save it to +output_dir+
 
-        Receive the path of a directory in which the results of the job will be stored,
-        if the directory does not exist it will be created
+        If the directory does not exist it will be created.
 
         Args:
-            output_dir: local destination to store the image
+            output_dir: path to store file
         """
         download(self.name, output_dir)
 
@@ -37,32 +36,30 @@ class File:
         return "<dymaxionlabs.file.File name=\"{name}\"".format(name=self.name)
 
 
-def upload(img_name):
-    """Function to load a image
-
-    Upload de local file recived
+def upload(filename):
+    """Upload a file named +filename+
 
     Args:
-        img_name -- image local path
+        filename -- path to local file
 
     Returns:
         Returns the detail of the object that was created in DymaxionLabs's server
 
     Raises:
-        FileExistsError: The img_name argument does not correspond to an existing file
+        FileExistsError: The filename argument does not correspond to an existing file
     """
-    if os.path.isfile(img_name) and os.access(img_name, os.R_OK):
+    if os.path.isfile(filename) and os.access(filename, os.R_OK):
         http = urllib3.PoolManager()
         headers = {
             'Authorization': 'Api-Key {}'.format(get_api_key()),
             'Accept-Language': 'es',
-            'Content-Type': mimetypes.MimeTypes().guess_type(img_name)[0]
+            'Content-Type': mimetypes.MimeTypes().guess_type(filename)[0]
         }
         upload_url = DYM_UPLOAD_FILE.format(
-            file_name=os.path.basename(img_name),
+            file_name=os.path.basename(filename),
             project_uuid=get_project_id())
         url = '{url}{path}'.format(url=get_api_url(), path=upload_url)
-        with open(img_name, 'rb') as fp:
+        with open(filename, 'rb') as fp:
             file_data = fp.read()
         r = http.request('POST', url, body=file_data, headers=headers)
         return json.loads(r.data.decode('utf-8'))['detail']
@@ -70,14 +67,13 @@ def upload(img_name):
         raise FileExistsError
 
 
-def download(img_name, output_dir="."):
-    """Function to download a image
+def download(filename, output_dir="."):
+    """Download a file named +filename+ to +output_dir+
 
-    Receive the path of a directory in which the image will be stored,
-    if the directory does not exist it will be created
+    If the output directory does not exist it will be created.
 
     Args:
-        img_name: image name
+        filename: image name
         output_dir: local destination to store the image
     """
     if not os.path.exists(output_dir):
@@ -87,9 +83,9 @@ def download(img_name, output_dir="."):
         'Accept-Language': 'es'
     }
     download_url = DYM_DOWNLOAD_FILE.format(
-        file_name=os.path.basename(img_name), project_uuid=get_project_id())
+        file_name=os.path.basename(filename), project_uuid=get_project_id())
     url = '{url}{path}'.format(url=get_api_url(), path=download_url)
     r = requests.get(url, headers=headers)
-    output_file = os.path.sep.join([output_dir, img_name])
+    output_file = os.path.sep.join([output_dir, filename])
     with open(output_file, 'wb') as f:
         f.write(r.content)
