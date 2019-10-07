@@ -1,5 +1,4 @@
-from dymaxionlabs import file
-from dymaxionlabs.file import File
+from dymaxionlabs import files
 from dymaxionlabs.utils import get_api_url, get_api_key, get_project_id
 
 import json
@@ -163,5 +162,5 @@ class Project:
         r = requests.get(url, headers=headers)
         files = []
         for v in json.loads(r.text)['results']:
-            files.append(File(self, v['name'], v['metadata']))
+            files.append(files.File(self, v['name'], v['metadata']))
         return files

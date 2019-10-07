@@ -25,9 +25,9 @@ class File:
     def download(output_dir):
         """Function to download the image
 
-        Receive the path of a directory in which the results of the job will be stored, 
+        Receive the path of a directory in which the results of the job will be stored,
         if the directory does not exist it will be created
-        
+
         Args:
             output_dir: local destination to store the image
         """
@@ -73,7 +73,7 @@ def upload(img_name):
 def download(img_name, output_dir="."):
     """Function to download a image
 
-    Receive the path of a directory in which the image will be stored, 
+    Receive the path of a directory in which the image will be stored,
     if the directory does not exist it will be created
 
     Args:
