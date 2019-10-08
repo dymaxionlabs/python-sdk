@@ -3,7 +3,7 @@ import mimetypes
 import requests
 import os
 import urllib3
-from dymaxionlabs.utils import get_api_url, get_api_key, get_project_id
+from dymaxionlabs.utils import get_api_url, get_api_key, get_project_id, raise_error
 
 DYM_UPLOAD_FILE = '/files/upload/{file_name}?project_uuid={project_uuid}'
 DYM_DOWNLOAD_FILE = '/files/download/{file_name}?project_uuid={project_uuid}'
@@ -62,7 +62,10 @@ def upload(filename):
         with open(filename, 'rb') as fp:
             file_data = fp.read()
         r = http.request('POST', url, body=file_data, headers=headers)
-        return json.loads(r.data.decode('utf-8'))['detail']
+        if r.status == 200:
+            return json.loads(r.data.decode('utf-8'))['detail']
+        else:
+            raise_error(r.status)
     else:
         raise FileExistsError
 
@@ -86,6 +89,9 @@ def download(filename, output_dir="."):
         file_name=os.path.basename(filename), project_uuid=get_project_id())
     url = '{url}{path}'.format(url=get_api_url(), path=download_url)
     r = requests.get(url, headers=headers)
-    output_file = os.path.sep.join([output_dir, filename])
-    with open(output_file, 'wb') as f:
-        f.write(r.content)
+    if r.status_code == 200:
+        output_file = os.path.sep.join([output_dir, filename])
+        with open(output_file, 'wb') as f:
+            f.write(r.content)
+    else:
+        raise_error(r.status_code)

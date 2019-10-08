@@ -1,5 +1,5 @@
 from dymaxionlabs import files
-from dymaxionlabs.utils import get_api_url, get_api_key, get_project_id
+from dymaxionlabs.utils import get_api_url, get_api_key, get_project_id, raise_error
 
 import json
 import requests
@@ -51,11 +51,14 @@ class PredictionJob:
                 url=get_api_url(),
                 path=DYM_PREDICTION_DETAIL.format(predictionId=self.id))
             r = requests.get(url, headers=headers)
-            data = json.loads(r.text)
-            if data['finished']:
-                self.finished = data['finished']
-                self.results_files = data['result_files']
-            return data['finished']
+            if r.status_code == 200:
+                data = json.loads(r.text)
+                if data['finished']:
+                    self.finished = data['finished']
+                    self.results_files = data['result_files']
+                return data['finished']
+            else:
+                raise_error(r.status_code)
 
     def download_results(self, output_dir="."):
         """Download results from a finished PredictionJob
@@ -109,13 +112,16 @@ class Estimator:
         url = '{url}{path}'.format(
             url=get_api_url(), path=DYM_PREDICT.format(estimatorId=self.uuid))
         r = requests.post(url, json=data, headers=headers)
-        data = json.loads(r.text)['detail']
-        self.prediction_job = PredictionJob(id=data['id'],
-                                            estimator=data['estimator'],
-                                            finished=data['finished'],
-                                            image_files=data['image_files'],
-                                            result_files=data['result_files'])
-        return self.prediction_job
+        if r.status_code == 200:
+            data = json.loads(r.text)['detail']
+            self.prediction_job = PredictionJob(id=data['id'],
+                                                estimator=data['estimator'],
+                                                finished=data['finished'],
+                                                image_files=data['image_files'],
+                                                result_files=data['result_files'])
+            return self.prediction_job
+        else:
+            raise_error(r.status_code)
 
     @classmethod
     def all(cls):
@@ -132,8 +138,10 @@ class Estimator:
             url=get_api_url(),
             path=DYM_PROJECT_DETAIL.format(projectId=get_project_id()))
         r = requests.get(url, headers=headers)
-        return json.loads(r.text)['estimators']
-
+        if r.status_code == 200:
+            return json.loads(r.text)['estimators']
+        else:
+            raise_error(r.status_code)
 
 class Project:
     def __init__(self):
@@ -157,7 +165,10 @@ class Project:
             url=get_api_url(),
             path=DYM_PROJECT_FILES.format(projectId=self.uuid))
         r = requests.get(url, headers=headers)
-        files = []
-        for v in json.loads(r.text)['results']:
-            files.append(files.File(self, v['name'], v['metadata']))
-        return files
+        if r.status_code == 200:
+            files = []
+            for v in json.loads(r.text)['results']:
+                files.append(files.File(self, v['name'], v['metadata']))
+            return files
+        else:
+            raise_error(r.status_code)
