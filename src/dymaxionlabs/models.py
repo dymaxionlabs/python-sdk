@@ -68,7 +68,7 @@ class PredictionJob:
         """
         if self.status():
             for f in self.results_files:
-                file.download(f, output_dir)
+                files.download(f, output_dir)
 
 
 class Estimator:
@@ -114,11 +114,12 @@ class Estimator:
         r = requests.post(url, json=data, headers=headers)
         if r.status_code == 200:
             data = json.loads(r.text)['detail']
-            self.prediction_job = PredictionJob(id=data['id'],
-                                                estimator=data['estimator'],
-                                                finished=data['finished'],
-                                                image_files=data['image_files'],
-                                                result_files=data['result_files'])
+            self.prediction_job = PredictionJob(
+                id=data['id'],
+                estimator=data['estimator'],
+                finished=data['finished'],
+                image_files=data['image_files'],
+                result_files=data['result_files'])
             return self.prediction_job
         else:
             raise_error(r.status_code)
@@ -143,6 +144,7 @@ class Estimator:
         else:
             raise_error(r.status_code)
 
+
 class Project:
     def __init__(self):
         """Constructor
@@ -166,9 +168,9 @@ class Project:
             path=DYM_PROJECT_FILES.format(projectId=self.uuid))
         r = requests.get(url, headers=headers)
         if r.status_code == 200:
-            files = []
+            res = []
             for v in json.loads(r.text)['results']:
-                files.append(files.File(self, v['name'], v['metadata']))
-            return files
+                res.append(files.File(self, v['name'], v['metadata']))
+            return res
         else:
             raise_error(r.status_code)

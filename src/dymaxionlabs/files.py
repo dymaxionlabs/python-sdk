@@ -22,7 +22,7 @@ class File:
         self.name = name
         self.metadata = metadata
 
-    def download(output_dir):
+    def download(self, output_dir):
         """Download file and save it to +output_dir+
 
         If the directory does not exist it will be created.
@@ -63,7 +63,7 @@ def upload(filename):
             file_data = fp.read()
         r = http.request('POST', url, body=file_data, headers=headers)
         if r.status == 200:
-            return json.loads(r.data.decode('utf-8'))['detail']
+            return json.loads(r.text)['detail']
         else:
             raise_error(r.status)
     else:
