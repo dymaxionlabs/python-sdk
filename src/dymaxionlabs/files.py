@@ -63,7 +63,7 @@ def upload(filename):
             file_data = fp.read()
         r = http.request('POST', url, body=file_data, headers=headers)
         if r.status == 200:
-            return json.loads(r.text)['detail']
+            return json.loads(r.data.decode('utf8'))['detail']
         else:
             raise_error(r.status)
     else:
