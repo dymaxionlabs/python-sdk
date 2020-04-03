@@ -7,13 +7,12 @@ import requests
 DYM_PREDICT = '/estimators/{estimatorId}/predict/'
 DYM_PREDICTED = '/estimators/{estimatorId}/predicted/'
 DYM_PREDICTION_DETAIL = '/predictionjob/{predictionId}'
-DYM_PROJECT_DETAIL = '/projects/{projectId}'
-DYM_PROJECT_FILES = '/files/?limit=1000&project_uuid={projectId}'
 
 
 class Estimator:
     """
     Class that represents an Estimator in DymaxionLabs API
+
     """
 
     TYPES = dict(object_detection='OD')
@@ -30,7 +29,8 @@ class Estimator:
             name: name
             classes: list of labels/classes
             estimator_type: type of estimator (i.e. )
-            prediction_job: related PredictionJob
+            metadata: user metadata
+            extra_attributes: extra attributes from API
         """
         self.uuid = uuid
         self.name = name
@@ -54,13 +54,16 @@ class Estimator:
                       estimator_type=cls.TYPES[type],
                       classes=classes,
                       metadata=metadata)
-        response = request('post', '/estimators/', params)
+        response = request(
+            'post', '{base_path}/'.format(base_path=self.base_path), params)
         return cls(**response)
 
     def delete(self):
-        request('delete', '/estimators/{}'.format(self.uuid))
+        request(
+            'delete', '{base_path}/{uuid}'.format(base_path=self.base_path, uuid=self.uuid))
         return True
 
+    # FIXME
     def predict_files(self, remote_files=[], local_files=[]):
         """Predict files
 
@@ -156,31 +159,3 @@ class PredictionJob:
         if self.status():
             for f in self.results_files:
                 file.download(f, output_dir)
-
-
-class Project:
-    def __init__(self):
-        """Constructor
-
-        Uses the environment variable to create the object
-        """
-        self.uuid = get_project_id()
-
-    def files(self):
-        """Obtain all info about the uploaded files from your project
-
-        Returns:
-            Returns a array of File objects
-        """
-        headers = {
-            'Authorization': 'Api-Key {}'.format(get_api_key()),
-            'Accept-Language': 'es'
-        }
-        url = '{url}{path}'.format(
-            url=get_api_url(),
-            path=DYM_PROJECT_FILES.format(projectId=self.uuid))
-        r = requests.get(url, headers=headers)
-        files = []
-        for v in json.loads(r.text)['results']:
-            files.append(files.File(self, v['name'], v['metadata']))
-        return files
