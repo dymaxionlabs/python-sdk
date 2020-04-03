@@ -1,5 +1,5 @@
 from dymaxionlabs import files
-from dymaxionlabs.utils import get_api_url, get_api_key, get_project_id
+from dymaxionlabs.utils import request, fetch_from_list_request
 
 import json
 import requests
@@ -11,6 +11,95 @@ DYM_PROJECT_DETAIL = '/projects/{projectId}'
 DYM_PROJECT_FILES = '/files/?limit=1000&project_uuid={projectId}'
 
 
+class Estimator:
+    """
+    Class that represents an Estimator in DymaxionLabs API
+    """
+
+    TYPES = dict(object_detection='OD')
+
+    base_path = '/estimators'
+
+    def __init__(self, *, uuid, name, classes, estimator_type, metadata, **extra_attributes):
+        """Estimator constructor
+
+        Usually created when using classmethods all(), get(), or create()
+
+        Args:
+            uuid: internal id
+            name: name
+            classes: list of labels/classes
+            estimator_type: type of estimator (i.e. )
+            prediction_job: related PredictionJob
+        """
+        self.uuid = uuid
+        self.name = name
+        self.classes = classes
+        self.estimator_type = estimator_type
+        self.metadata = metadata
+        self.extra_attributes = extra_attributes
+
+        self.prediction_job = None
+
+    @classmethod
+    def all(cls):
+        return [Estimator(**attrs) for attrs in fetch_from_list_request(cls.base_path + '/')]
+
+    @classmethod
+    def create(cls, *, name, type, classes, metadata=None):
+        if type not in cls.TYPES:
+            raise TypeError(
+                "{} should be one of these: {}".format(type, cls.TYPES.keys()))
+        params = dict(name=name,
+                      estimator_type=cls.TYPES[type],
+                      classes=classes,
+                      metadata=metadata)
+        response = request('post', '/estimators/', params)
+        return cls(**response)
+
+    def delete(self):
+        request('delete', '/estimators/{}'.format(self.uuid))
+        return True
+
+    def predict_files(self, remote_files=[], local_files=[]):
+        """Predict files
+
+        This function will start a prediction job over the specified files.
+        You can predict over already upload images by providing a list of
+        +remote_files+, or over images in your disk by providing a list of
+        +local_files+.  Local files will be uploaded before prediction.
+
+        Args:
+            remote_files: array of string with the names of already uploaded files
+            local_files: array of string with the names of local files
+
+        Returns:
+            Returns a dict with info about the new PredictionJob
+        """
+        for local_file in local_files:
+            f = file.upload(local_file)
+            remote_files.append(f['name'])
+
+        data = {'files': remote_files}
+        headers = {
+            'Authorization': 'Api-Key {}'.format(get_api_key()),
+            'Accept-Language': 'es'
+        }
+        url = '{url}{path}'.format(
+            url=get_api_url(), path=DYM_PREDICT.format(estimatorId=self.uuid))
+        r = requests.post(url, json=data, headers=headers)
+        data = json.loads(r.text)['detail']
+        self.prediction_job = PredictionJob(id=data['id'],
+                                            estimator=data['estimator'],
+                                            finished=data['finished'],
+                                            image_files=data['image_files'],
+                                            result_files=data['result_files'])
+        return self.prediction_job
+
+    def __repr__(self):
+        return "<Estimator uuid={uuid!r} name={name!r}>".format(name=self.name, uuid=self.uuid)
+
+
 class PredictionJob:
     """
     Class that represents a PredictionJob in DymaxionLabs API
@@ -18,6 +107,7 @@ class PredictionJob:
     A PredictionJob is a background job that performs the prediction using a
     previously trained Estimator and your uploaded images.
     """
+
     def __init__(self, id, estimator, finished, image_files, result_files):
         """Constructor
 
@@ -66,73 +156,6 @@ class PredictionJob:
         if self.status():
             for f in self.results_files:
                 file.download(f, output_dir)
-
-
-class Estimator:
-    """
-    Class that represents an Estimator in DymaxionLabs API
-    """
-    def __init__(self, uuid):
-        """Constructor
-
-        Args:
-            uuid: Estiamtor uuid
-            prediction_job: related PredictionJob
-        """
-        self.uuid = uuid
-        self.prediction_job = None
-
-    def predict_files(self, remote_files=[], local_files=[]):
-        """Predict files
-
-        This function will start a prediction job over the specified files.
-        You can predict over already upload images by providing a list of
-        +remote_files+, or over images in your disk by providing a list of
-        +local_files+.  Local files will be uploaded before prediction.
-
-        Args:
-            remote_files: array of string with the names of already uploaded files
-            local_files: array of string with the names of local files
-
-        Returns:
-            Returns a dict with info about the new PredictionJob
-        """
-        for local_file in local_files:
-            f = file.upload(local_file)
-            remote_files.append(f['name'])
-
-        data = {'files': remote_files}
-        headers = {
-            'Authorization': 'Api-Key {}'.format(get_api_key()),
-            'Accept-Language': 'es'
-        }
-        url = '{url}{path}'.format(
-            url=get_api_url(), path=DYM_PREDICT.format(estimatorId=self.uuid))
-        r = requests.post(url, json=data, headers=headers)
-        data = json.loads(r.text)['detail']
-        self.prediction_job = PredictionJob(id=data['id'],
-                                            estimator=data['estimator'],
-                                            finished=data['finished'],
-                                            image_files=data['image_files'],
-                                            result_files=data['result_files'])
-        return self.prediction_job
-
-    @classmethod
-    def all(cls):
-        """Obtain all UUIDs of estimators from your project
-
-        Returns:
-            Returns an array of UUIDs
-        """
-        headers = {
-            'Authorization': 'Api-Key {}'.format(get_api_key()),
-            'Accept-Language': 'es'
-        }
-        url = '{url}{path}'.format(
-            url=get_api_url(),
-            path=DYM_PROJECT_DETAIL.format(projectId=get_project_id()))
-        r = requests.get(url, headers=headers)
-        return json.loads(r.text)['estimators']
 
 
 class Project:

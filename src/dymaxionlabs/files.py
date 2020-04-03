@@ -3,7 +3,7 @@ import mimetypes
 import requests
 import os
 import urllib3
-from dymaxionlabs.utils import get_api_url, get_api_key, get_project_id
+from dymaxionlabs.utils import get_api_url, get_api_key
 
 DYM_UPLOAD_FILE = '/files/upload/{file_name}?project_uuid={project_uuid}'
 DYM_DOWNLOAD_FILE = '/files/download/{file_name}?project_uuid={project_uuid}'
