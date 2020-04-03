@@ -1,7 +1,7 @@
 import mimetypes
 import os
 
-from dymaxionlabs.utils import fetch_from_list_request, request
+from .utils import request, fetch_from_list_request
 
 
 class File:
