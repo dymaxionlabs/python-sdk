@@ -9,8 +9,3 @@ def get_api_url():
 def get_api_key():
     """Get current API Key from environment"""
     return os.environ.get("DYM_API_KEY")
-
-
-def get_project_id():
-    """Get current Project uuid from environment"""
-    return os.environ.get("DYM_PROJECT_ID")
