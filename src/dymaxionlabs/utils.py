@@ -25,11 +25,16 @@ def get_api_key():
     return os.environ.get("DYM_API_KEY")
 
 
-def request(method, path, body={}, params={}, headers={}):
+def request(method, path, body=None, params={}, headers={}, binary=False, parse_response=True):
     headers = {'Authorization': 'Api-Key {}'.format(get_api_key()), **headers}
     request_method = getattr(requests, method)
     url = '{url}{path}'.format(url=get_api_url(), path=path)
-    response = request_method(url, json=body, params={}, headers=headers)
+    if binary:
+        response = request_method(
+            url, data=body, params=params, headers=headers)
+    else:
+        response = request_method(
+            url, json=body, params=params, headers=headers)
     code = response.status_code
 
     # Error handling
@@ -40,12 +45,15 @@ def request(method, path, body={}, params={}, headers={}):
     elif code in range(500, 600):
         raise InternalServerError(response.text)
 
+    # If code is 204, return nothing
     if code == 204:
-        # If code is 204, return nothing
         return
-    else:
-        # Otherwise, parse json response and return
+
+    # Otherwise, parse json response and return
+    if parse_response:
         return json.loads(response.text)
+    else:
+        return response.content
 
 
 def fetch_from_list_request(path, params={}):
