@@ -25,8 +25,8 @@ def get_api_key():
     return os.environ.get("DYM_API_KEY")
 
 
-def request(method, path, body={}, params={}):
-    headers = {'Authorization': 'Api-Key {}'.format(get_api_key())}
+def request(method, path, body={}, params={}, headers={}):
+    headers = {'Authorization': 'Api-Key {}'.format(get_api_key()), **headers}
     request_method = getattr(requests, method)
     url = '{url}{path}'.format(url=get_api_url(), path=path)
     response = request_method(url, json=body, params={}, headers=headers)

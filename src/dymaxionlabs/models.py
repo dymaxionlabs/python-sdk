@@ -11,7 +11,8 @@ DYM_PREDICTION_DETAIL = '/predictionjob/{predictionId}'
 
 class Estimator:
     """
-    Class that represents an Estimator in DymaxionLabs API
+    The Estimator class represents a Model that can be trained to solve
+    different kinds of tasks, like object detection or classification.
 
     """
 
