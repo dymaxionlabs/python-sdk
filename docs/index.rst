@@ -35,18 +35,13 @@ Authentication
 Sing up at https://app.dymaxionlabs.com/signup if you don't have a user yet,
 otherwise log in.
 
-When entering the first time, you will be asked to create a new Project. After
-nameing your project you will enter the main dashboard.  Take note of your
-Project Id.
+Enter the API Key section, create a new API key and copy the generated key.
 
-Now enter the API Key section, create a new API key and copy the generated key.
-
-You need to set both keys as environment variables, like this:
+You need to set the API key using an environment variable, like this:
 
 .. code-block:: bash
 
   export DYM_API_KEY=...
-  export DYM_PROJECT_ID=...
 
 
 You can also do this from Python:
@@ -56,7 +51,6 @@ You can also do this from Python:
   import os
 
   os.environ["DYM_API_KEY"] = "insert-api-key"
-  os.environ["DYM_PROJECT_ID"] = "insert-project-id"
 
 
 From now on, you have full access to the Dymaxion Labs API from Python.
