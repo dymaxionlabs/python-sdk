@@ -31,7 +31,7 @@ class Estimator:
             classes: list of labels/classes
             estimator_type: type of estimator (i.e. )
             metadata: user metadata
-            extra_attributes: extra attributes from API
+            extra_attributes: extra attributes from API endpoint
         """
         self.uuid = uuid
         self.name = name
@@ -44,7 +44,15 @@ class Estimator:
 
     @classmethod
     def all(cls):
-        return [Estimator(**attrs) for attrs in fetch_from_list_request(cls.base_path + '/')]
+        return [Estimator(**attrs)
+                for attrs
+                in fetch_from_list_request('{base_path}/'.format(base_path=cls.base_path))]
+
+    @classmethod
+    def get(cls, uuid):
+        attrs = request(
+            'get', '{base_path}/{uuid}'.format(base_path=cls.base_path, uuid=uuid))
+        return Estimator(**attrs)
 
     @classmethod
     def create(cls, *, name, type, classes, metadata=None):
@@ -56,7 +64,7 @@ class Estimator:
                       classes=classes,
                       metadata=metadata)
         response = request(
-            'post', '{base_path}/'.format(base_path=self.base_path), params)
+            'post', '{base_path}/'.format(base_path=cls.base_path), params)
         return cls(**response)
 
     def delete(self):
