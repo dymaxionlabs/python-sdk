@@ -1,5 +1,6 @@
-import os
 import json
+import os
+
 import requests
 
 
@@ -26,6 +27,7 @@ def get_api_key():
 
 
 def request(method, path, body=None, params={}, headers={}, binary=False, parse_response=True):
+    """Makes an HTTP request to the API"""
     headers = {'Authorization': 'Api-Key {}'.format(get_api_key()), **headers}
     request_method = getattr(requests, method)
     url = '{url}{path}'.format(url=get_api_url(), path=path)
@@ -57,6 +59,7 @@ def request(method, path, body=None, params={}, headers={}, binary=False, parse_
 
 
 def fetch_from_list_request(path, params={}):
+    """Fetches all entities from a paginated result"""
     res = []
     response = request('get', path, params=params)
     res.extend(response['results'])

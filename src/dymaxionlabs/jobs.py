@@ -1,6 +1,6 @@
-from .utils import request, fetch_from_list_request
-from .models import Estimator
 from .files import File
+from .models import Estimator
+from .utils import fetch_from_list_request, request
 
 
 class PredictionJob:
@@ -31,36 +31,45 @@ class PredictionJob:
 
     @classmethod
     def all(cls):
+        """Fetches all jobs"""
         for attrs in fetch_from_list_request('{base_path}/'.format(base_path=cls.base_path)):
-            self.from_attributes(**attrs)
+            cls._from_attributes(**attrs)
 
     @classmethod
-    def from_attributes(**attrs):
+    def get(cls, id):
+        """Get a job by id"""
+        attrs = request(
+            'get', '{base_path}/{id}'.format(base_path=cls.base_path, id=id))
+        return cls._from_attributes(**attrs)
+
+    @classmethod
+    def _from_attributes(**attrs):
+        """Creates a job class from an +attrs+ dictionary
+
+        This method also fetches related entities.
+
+        Used internally by other class methods
+        """
         estimator = Estimator.get(attrs['estimator'])
         image_files = [File.get(name) for name in attrs['image_files']]
         results_files = [File.get(name) for name in attrs['results_files']]
         cls(**attrs, estimator=estimator, image_files=image_files, results_files)
 
-    @classmethod
-    def get(cls, id):
-        attrs = request(
-            'get', '{base_path}/{uuid}'.format(base_path=cls.base_path, uuid=uuid))
-        return cls(**attrs)
-
     def is_running(self):
+        """Decides whether job is running or not"""
         if self.finished:
             return False
         self.refresh()
         return not self.finished
 
     def refresh(self):
-        """Refresh status of a PredictionJob"""
+        """Refresh status of the job"""
         attrs = request('get', '{base_path}/predictionjob/{id}')
         # TODO Update the other fields
         self.finished = attrs['finished']
 
     def download_results(self, output_dir="."):
-        """Download results from a finished PredictionJob
+        """Download results from a finished job
 
         Args:
             output_dir: path for storing results

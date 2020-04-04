@@ -1,7 +1,7 @@
 import mimetypes
 import os
 
-from .utils import request, fetch_from_list_request
+from .utils import fetch_from_list_request, request
 
 
 class File:
@@ -24,15 +24,18 @@ class File:
 
     @classmethod
     def all(cls):
+        """Fetch all files in project"""
         return [File(**attrs) for attrs in fetch_from_list_request(cls.base_path + '/')]
 
     @classmethod
     def get(cls, name):
+        """Get a specific File named +name+"""
         attrs = request(
             'get', '{base_path}/{name}'.format(base_path=cls.base_path, name=name))
         return File(**attrs)
 
     def delete(self):
+        """Delete file"""
         request(
             'delete', '{base_path}/{name}'.format(base_path=self.base_path,
                                                   name=self.name))

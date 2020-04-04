@@ -1,7 +1,8 @@
-from .utils import request, fetch_from_list_request
-
 import json
+
 import requests
+
+from .utils import fetch_from_list_request, request
 
 DYM_PREDICT = '/estimators/{estimatorId}/predict/'
 
@@ -20,7 +21,7 @@ class Estimator:
     def __init__(self, *, uuid, name, classes, estimator_type, metadata, **extra_attributes):
         """Estimator constructor
 
-        Usually created when using classmethods all(), get(), or create()
+        Usually created when using other classmethods: all(), get(), or create()
 
         Args:
             uuid: internal id
@@ -41,30 +42,37 @@ class Estimator:
 
     @classmethod
     def all(cls):
+        """Fetch all estimators"""
         return [cls(**attrs)
                 for attrs
                 in fetch_from_list_request('{base_path}/'.format(base_path=cls.base_path))]
 
     @classmethod
     def get(cls, uuid):
+        """Get estimator with +uuid+"""
         attrs = request(
             'get', '{base_path}/{uuid}'.format(base_path=cls.base_path, uuid=uuid))
         return Estimator(**attrs)
 
     @classmethod
     def create(cls, *, name, type, classes, metadata=None):
+        """Creates a new Estimator named +name+ of +type+ with +classes+ as labels
+
+        A metadata dictionary can be added via the +metadata+ parameter
+        """
         if type not in cls.TYPES:
             raise TypeError(
                 "{} should be one of these: {}".format(type, cls.TYPES.keys()))
-        params = dict(name=name,
-                      estimator_type=cls.TYPES[type],
-                      classes=classes,
-                      metadata=metadata)
+        body = dict(name=name,
+                    estimator_type=cls.TYPES[type],
+                    classes=classes,
+                    metadata=metadata)
         response = request(
-            'post', '{base_path}/'.format(base_path=cls.base_path), params)
+            'post', '{base_path}/'.format(base_path=cls.base_path), body)
         return cls(**response)
 
     def delete(self):
+        """Delete estimator"""
         request(
             'delete', '{base_path}/{uuid}'.format(base_path=self.base_path, uuid=self.uuid))
         return True
