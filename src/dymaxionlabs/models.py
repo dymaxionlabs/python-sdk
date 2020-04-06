@@ -77,6 +77,18 @@ class Estimator:
             'delete', '{base_path}/{uuid}'.format(base_path=self.base_path, uuid=self.uuid))
         return True
 
+    def import_labels(self, vector_path):
+        """Upload +vector_path+ as a vector file and load labels into current estimator"""
+        vector_file = File.upload(vector_path)
+        return self.load_labels_from(vector_file)
+
+    def load_labels_from(self, file):
+        """Load labels from already uploaded +file+"""
+        body = dict(vector_file=vector_file.name)
+        response = request(
+            'post', '{base_path}/load_labels'.format(base_path=cls.base_path), body)
+        return response
+
     def predict_files(self, *files):
         """Predict files
 
