@@ -39,6 +39,7 @@ class Estimator:
         self.metadata = metadata
         self.extra_attributes = extra_attributes
 
+        self.training_job = None
         self.prediction_job = None
 
     @classmethod
@@ -100,6 +101,22 @@ class Estimator:
             '{base_path}/{uuid}/load_labels'.format(base_path=cls.base_path,
                                                     uuid=self.uuid), body)
         return response
+
+    def train(self):
+        """Train
+
+        This function will start a training job over the current estimator.
+        I will create a model based on all the images from the estimator
+        and the associates annotations.
+
+        Returns:
+            Returns a dict with info about the new TrainingJob
+        """
+        response = request(
+            'post', '{base_path}/{uuid}/train'.format(base_path=cls.base_path,
+                                                      uuid=self.uuid))
+        self.training_job = response['detail']
+        return self.training_job
 
     def predict_files(self, *files):
         """Predict files
