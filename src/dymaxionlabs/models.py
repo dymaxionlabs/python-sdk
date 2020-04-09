@@ -18,7 +18,8 @@ class Estimator:
 
     base_path = '/estimators'
 
-    def __init__(self, *, uuid, name, classes, estimator_type, metadata, **extra_attributes):
+    def __init__(self, *, uuid, name, classes, estimator_type, metadata,
+                 **extra_attributes):
         """Estimator constructor
 
         Usually created when using other classmethods: all(), get(), or create()
@@ -43,15 +44,18 @@ class Estimator:
     @classmethod
     def all(cls):
         """Fetch all estimators"""
-        return [cls(**attrs)
-                for attrs
-                in fetch_from_list_request('{base_path}/'.format(base_path=cls.base_path))]
+        return [
+            cls(**attrs)
+            for attrs in fetch_from_list_request('{base_path}/'.format(
+                base_path=cls.base_path))
+        ]
 
     @classmethod
     def get(cls, uuid):
         """Get estimator with +uuid+"""
         attrs = request(
-            'get', '{base_path}/{uuid}'.format(base_path=cls.base_path, uuid=uuid))
+            'get', '{base_path}/{uuid}'.format(base_path=cls.base_path,
+                                               uuid=uuid))
         return Estimator(**attrs)
 
     @classmethod
@@ -61,32 +65,40 @@ class Estimator:
         A metadata dictionary can be added via the +metadata+ parameter
         """
         if type not in cls.TYPES:
-            raise TypeError(
-                "{} should be one of these: {}".format(type, cls.TYPES.keys()))
+            raise TypeError("{} should be one of these: {}".format(
+                type, cls.TYPES.keys()))
         body = dict(name=name,
                     estimator_type=cls.TYPES[type],
                     classes=classes,
                     metadata=metadata)
-        response = request(
-            'post', '{base_path}/'.format(base_path=cls.base_path), body)
+        response = request('post',
+                           '{base_path}/'.format(base_path=cls.base_path),
+                           body)
         return cls(**response)
 
     def delete(self):
         """Delete estimator"""
         request(
-            'delete', '{base_path}/{uuid}'.format(base_path=self.base_path, uuid=self.uuid))
+            'delete', '{base_path}/{uuid}'.format(base_path=self.base_path,
+                                                  uuid=self.uuid))
         return True
 
-    def import_labels(self, vector_path):
-        """Upload +vector_path+ as a vector file and load labels into current estimator"""
+    def import_labels(self, vector_path, file, label):
+        """Upload +vector_path+ as a vector file, related to +file+,
+        and load labels into current estimator tagged like +label+"""
         vector_file = File.upload(vector_path)
-        return self.load_labels_from(vector_file)
+        return self.load_labels_from(vector_file, file, label)
 
-    def load_labels_from(self, file):
-        """Load labels from already uploaded +file+"""
-        body = dict(vector_file=vector_file.name)
+    def load_labels_from(self, vector_file, file, label):
+        """Load labels from already uploaded +vector_file+ related to +file+ and
+        tags these labels like +label+"""
+        body = dict(vector_file=vector_file.name,
+                    related_file=file.name,
+                    label=label)
         response = request(
-            'post', '{base_path}/load_labels'.format(base_path=cls.base_path), body)
+            'post',
+            '{base_path}/{uuid}/load_labels'.format(base_path=cls.base_path,
+                                                    uuid=self.uuid), body)
         return response
 
     def predict_files(self, *files):
@@ -106,13 +118,15 @@ class Estimator:
         """
         if not files:
             raise RuntimeError("files is empty")
-        path = '{base_path}/{uuid}/predict/'.format(
-            base_path=self.base_path, uuid=self.uuid)
-        response = request('post', path, body={
-                           'files': [f.name for f in files]})
+        path = '{base_path}/{uuid}/predict/'.format(base_path=self.base_path,
+                                                    uuid=self.uuid)
+        response = request('post',
+                           path,
+                           body={'files': [f.name for f in files]})
         job_attrs = response['detail']
         self.prediction_job = PredictionJob.from_attributes(job_attrs)
         return self.prediction_job
 
     def __repr__(self):
-        return "<Estimator uuid={uuid!r} name={name!r}>".format(name=self.name, uuid=self.uuid)
+        return "<Estimator uuid={uuid!r} name={name!r}>".format(name=self.name,
+                                                                uuid=self.uuid)
