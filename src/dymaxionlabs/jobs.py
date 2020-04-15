@@ -53,7 +53,7 @@ class TrainingJob:
             'get',
             '{base_path}/{uuid}/finished/'.format(base_path=self.base_path,
                                                   uuid=self.estimator.uuid))
-        self.finished = attrs['finished']
+        self.finished = attrs['detail']
 
 
 class PredictionJob:
