@@ -53,8 +53,9 @@ class Estimator:
 
         Used internally by other class methods
         """
-        attrs['image_files'] = [File.get(name)
-                                for name in attrs['image_files']]
+        attrs['image_files'] = [
+            File.get(name) for name in attrs['image_files']
+        ]
         return cls(**attrs)
 
     @classmethod
@@ -104,9 +105,8 @@ class Estimator:
         new_image_files = [img.name for img in set(self.image_files + images)]
         body = dict(image_files=new_image_files)
         response = request(
-            'patch',
-            '{base_path}/{uuid}/'.format(base_path=self.base_path,
-                                         uuid=self.uuid), body)
+            'patch', '{base_path}/{uuid}/'.format(base_path=self.base_path,
+                                                  uuid=self.uuid), body)
         self.image_files = new_image_files
         return self
 
@@ -117,7 +117,8 @@ class Estimator:
         """
         if label not in self.classes:
             raise ValueError(
-                "Label '{}' is invalid. Must be one of: {}".format(label, self.classes))
+                "Label '{}' is invalid. Must be one of: {}".format(
+                    label, self.classes))
         body = dict(vector_file=vector_file.name,
                     related_file=image_file.name,
                     label=label)
@@ -128,6 +129,7 @@ class Estimator:
         return self
 
     def train(self):
+        from .jobs import TrainingJob
         """Train
 
         This function will start a training job over the current estimator.
@@ -138,12 +140,13 @@ class Estimator:
             Returns a dict with info about the new TrainingJob
         """
         response = request(
-            'post', '{base_path}/{uuid}/train'.format(base_path=cls.base_path,
+            'post', '{base_path}/{uuid}/train'.format(base_path=self.base_path,
                                                       uuid=self.uuid))
-        self.training_job = response['detail']
+        self.training_job = TrainingJob._from_attributes(response['detail'])
         return self.training_job
 
     def predict_files(self, *files):
+        from .jobs import PredictionJob
         """Predict files
 
         This function will start a prediction job over the specified files.
@@ -166,7 +169,7 @@ class Estimator:
                            path,
                            body={'files': [f.name for f in files]})
         job_attrs = response['detail']
-        self.prediction_job = PredictionJob.from_attributes(job_attrs)
+        self.prediction_job = PredictionJob._from_attributes(job_attrs)
         return self.prediction_job
 
     def __repr__(self):
