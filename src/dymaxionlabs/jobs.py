@@ -43,17 +43,19 @@ class PredictionJob:
         return cls._from_attributes(**attrs)
 
     @classmethod
-    def _from_attributes(**attrs):
+    def _from_attributes(cls, **attrs):
         """Creates a job class from an +attrs+ dictionary
 
         This method also fetches related entities.
 
         Used internally by other class methods
         """
-        estimator = Estimator.get(attrs['estimator'])
-        image_files = [File.get(name) for name in attrs['image_files']]
-        results_files = [File.get(name) for name in attrs['results_files']]
-        cls(**attrs, estimator=estimator, image_files=image_files, results_files)
+        attrs['estimator'] = Estimator.get(attrs['estimator'])
+        attrs['image_files'] = [File.get(name)
+                                for name in attrs['image_files']]
+        attrs['results_files'] = [File.get(name)
+                                  for name in attrs['results_files']]
+        return cls(**attrs)
 
     def is_running(self):
         """Decides whether job is running or not"""
