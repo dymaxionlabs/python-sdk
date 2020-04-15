@@ -59,55 +59,54 @@ From now on, you have full access to the Dymaxion Labs API from Python.
 Examples
 ========
 
-To use your models for predicting, you have to know their UUID.
-
-You can obtain this by visiting the models page:
-https://app.dymaxionlabs.com/home/models.
-Click on the Edit button of your model, then on Show UUID menu option. Copy
-this and pass it as parameter to the ``Estimator`` constructor.
-
-You can predict objects in local images. For example, if you have ``img.jpg``:
+Suppose you want to detect pools in a residential area. First, you need to
+create an Estimator. In this case, you want an "object_detection" type of
+model, and there is only one class of object.
 
 .. code-block:: python
 
-    import time
-    from dymaxionlabs.models import Estimator
+  from dymaxionlabs.estimators import Estimator
 
-    model = Estimator('b4676699-27c8-4193-a24c-cffaf88cce92')
-
-    job = model.predict_files(local_files=['./img.jpg'])
-
-    # Wait for results
-    while not job.status():
-        print("Waiting for results...")
-        time.sleep(60)
-
-    # Download results to ./results directory (will be created if not exists)
-    job.download_results("./results")
+  pools_detector = Estimator.create(name="Pools detector",
+                                    type="object_detection",
+                                    classes=["pool"])
 
 
-or use previously uploaded files (*remote*)
+Now, you should upload the images you want to use for training, and add them
+to your estimator.
 
 .. code-block:: python
 
-    import time
-    from dymaxionlabs.models import Estimator, Project
+  from dymaxionlabs.files import File
 
-    project = Project()
-    files = project.files()
-    first_file = files[0]
+  img = File.upload("pools-2020-02-01.tif")
+  pools_detector.add_image(img)
 
-    model = Estimator('b4676699-27c8-4193-a24c-cffaf88cce92')
 
-    job = model.predict_files(remote_files=[first_file.name])
+Next step is to upload your labels file (GeoJSON file) and add them to your
+estimator. The labels file must be a GeoJSON of polygons for a specific
+class. If you have more than one class, you hae to separate your labels in
+different files for each class.
 
-    # Wait for results
-    while not job.status():
-        print("Waiting for seconds results...")
-        time.sleep(60)
+.. code-block:: python
 
-    # Download results to ./results directory (will be created if not exists)
-    job.download_results("./results")
+  labels = File.upload("labels.geojson")
+  pools_detector.add_labels_for(labels, img, "pool")
+
+
+Now you are ready to train the model. Training might take a few hours to
+finish, so the train() method returns a TrainingJob instance, that represents
+the current training job.
+
+.. code-block:: python
+
+  job = pools_detector.train()
+
+  job.is_running()
+  #=> True
+
+
+When the job finishes, your model will be ready to be used for prediction.
 
 
 Contents
