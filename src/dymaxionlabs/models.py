@@ -2,6 +2,7 @@ import json
 
 import requests
 
+from .files import File
 from .utils import fetch_from_list_request, request
 
 DYM_PREDICT = '/estimators/{estimatorId}/predict/'
@@ -19,7 +20,7 @@ class Estimator:
     base_path = '/estimators'
 
     def __init__(self, *, uuid, name, classes, estimator_type, metadata,
-                 **extra_attributes):
+                 image_files, **extra_attributes):
         """Estimator constructor
 
         Usually created when using other classmethods: all(), get(), or create()
@@ -29,6 +30,7 @@ class Estimator:
             name: name
             classes: list of labels/classes
             estimator_type: type of estimator (i.e. )
+            image_files: list of associated image files used for training
             metadata: user metadata
             extra_attributes: extra attributes from API endpoint
         """
@@ -37,16 +39,29 @@ class Estimator:
         self.classes = classes
         self.estimator_type = estimator_type
         self.metadata = metadata
+        self.image_files = image_files
         self.extra_attributes = extra_attributes
 
         self.training_job = None
         self.prediction_job = None
 
     @classmethod
+    def _from_attributes(cls, **attrs):
+        """Creates an Estimator class from an +attrs+ dictionary
+
+        This method also fetches related entities.
+
+        Used internally by other class methods
+        """
+        attrs['image_files'] = [File.get(name)
+                                for name in attrs['image_files']]
+        return cls(**attrs)
+
+    @classmethod
     def all(cls):
         """Fetch all estimators"""
         return [
-            cls(**attrs)
+            cls._from_attributes(**attrs)
             for attrs in fetch_from_list_request('{base_path}/'.format(
                 base_path=cls.base_path))
         ]
@@ -57,7 +72,7 @@ class Estimator:
         attrs = request(
             'get', '{base_path}/{uuid}'.format(base_path=cls.base_path,
                                                uuid=uuid))
-        return Estimator(**attrs)
+        return cls._from_attributes(**attrs)
 
     @classmethod
     def create(cls, *, name, type, classes, metadata=None):
@@ -75,7 +90,7 @@ class Estimator:
         response = request('post',
                            '{base_path}/'.format(base_path=cls.base_path),
                            body)
-        return cls(**response)
+        return cls._from_attributes(**response)
 
     def delete(self):
         """Delete estimator"""
@@ -84,23 +99,33 @@ class Estimator:
                                                   uuid=self.uuid))
         return True
 
-    def import_labels(self, vector_path, file, label):
-        """Upload +vector_path+ as a vector file, related to +file+,
-        and load labels into current estimator tagged like +label+"""
-        vector_file = File.upload(vector_path)
-        return self.load_labels_from(vector_file, file, label)
+    def add_image(self, *images):
+        """Add an Image File to the estimator, for training"""
+        new_image_files = [img.name for img in set(self.image_files + images)]
+        body = dict(image_files=new_image_files)
+        response = request(
+            'patch',
+            '{base_path}/{uuid}/'.format(base_path=self.base_path,
+                                         uuid=self.uuid), body)
+        self.image_files = new_image_files
+        return self
 
-    def load_labels_from(self, vector_file, file, label):
-        """Load labels from already uploaded +vector_file+ related to +file+ and
-        tags these labels like +label+"""
+    def add_labels_for(self, vector_file, image_file, label):
+        """
+        Add labels from an already uploaded +vector_file+ related to
+        +image_file+ and tags these labels like +label+
+        """
+        if label not in self.classes:
+            raise ValueError(
+                "Label '{}' is invalid. Must be one of: {}".format(label, self.classes))
         body = dict(vector_file=vector_file.name,
-                    related_file=file.name,
+                    related_file=image_file.name,
                     label=label)
         response = request(
             'post',
-            '{base_path}/{uuid}/load_labels'.format(base_path=cls.base_path,
+            '{base_path}/{uuid}/load_labels'.format(base_path=self.base_path,
                                                     uuid=self.uuid), body)
-        return response
+        return self
 
     def train(self):
         """Train
