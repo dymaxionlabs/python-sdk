@@ -1,5 +1,6 @@
 import json
 import os
+from urllib.parse import urlparse
 
 import requests
 
@@ -64,7 +65,9 @@ def fetch_from_list_request(path, params={}):
     response = request('get', path, params=params)
     res.extend(response['results'])
     if response['next']:
-        next_resp = fetch_from_list_request(
-            path=response['next'], params=params)
-        res.extend(next_resp['results'])
+        p = urlparse(response['next'])
+        new_path = '{}?{}#{}'.format(p.path, p.query, p.fragment)
+        next_items = fetch_from_list_request(
+            path=new_path, params=params)
+        res.extend(next_items)
     return res
