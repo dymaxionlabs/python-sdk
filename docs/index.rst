@@ -65,7 +65,7 @@ model, and there is only one class of object.
 
 .. code-block:: python
 
-  from dymaxionlabs.estimators import Estimator
+  from dymaxionlabs.models import Estimator
 
   pools_detector = Estimator.create(name="Pools detector",
                                     type="object_detection",
