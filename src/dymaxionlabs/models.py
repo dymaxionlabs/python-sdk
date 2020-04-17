@@ -102,7 +102,9 @@ class Estimator:
 
     def add_image(self, *images):
         """Add an Image File to the estimator, for training"""
-        new_image_files = [img.name for img in set(self.image_files + images)]
+        new_image_files = [
+            img.name for img in set(self.image_files + list(images))
+        ]
         body = dict(image_files=new_image_files)
         response = request(
             'patch', '{base_path}/{uuid}/'.format(base_path=self.base_path,
