@@ -25,13 +25,17 @@ class File:
     @classmethod
     def all(cls):
         """Fetch all files in project"""
-        return [File(**attrs) for attrs in fetch_from_list_request(cls.base_path + '/')]
+        return [
+            File(**attrs)
+            for attrs in fetch_from_list_request(cls.base_path + '/')
+        ]
 
     @classmethod
     def get(cls, name):
         """Get a specific File named +name+"""
         attrs = request(
-            'get', '{base_path}/{name}'.format(base_path=cls.base_path, name=name))
+            'get', '{base_path}/{name}'.format(base_path=cls.base_path,
+                                               name=name))
         return File(**attrs)
 
     def delete(self):
@@ -54,12 +58,17 @@ class File:
         filename = os.path.basename(input_path)
         with open(input_path, 'rb') as fp:
             data = fp.read()
-        path = '{base_path}/upload/{filename}'.format(
-            base_path=cls.base_path, filename=filename)
-        response = request('post', path, headers={
-            'Content-Type': mimetypes.MimeTypes().guess_type(filename)[0]
-        }, body=data, binary=True)
-        return response
+        path = '{base_path}/upload/{filename}'.format(base_path=cls.base_path,
+                                                      filename=filename)
+        response = request('post',
+                           path,
+                           headers={
+                               'Content-Type':
+                               mimetypes.MimeTypes().guess_type(filename)[0]
+                           },
+                           body=data,
+                           binary=True)
+        return File(**response['detail'])
 
     def download(self, output_dir="."):
         """Download file and save it to +output_dir+
@@ -71,9 +80,8 @@ class File:
         """
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
-        path = '{base_path}/download/{name}'.format(
-            base_path=self.base_path,
-            name=self.name)
+        path = '{base_path}/download/{name}'.format(base_path=self.base_path,
+                                                    name=self.name)
         content = request('get', path, binary=True, parse_response=False)
         output_file = os.path.join(output_dir, self.name)
         with open(output_file, 'wb') as f:
