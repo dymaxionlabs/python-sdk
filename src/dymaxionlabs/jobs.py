@@ -74,13 +74,13 @@ class PredictionJob:
             estimator: related estimator instance
             finished: PredictionJob's state
             image_files: array of strings that contains the names of image to predict
-            results_files: array of strings that contains the names of results
+            result_files: array of strings that contains the names of results
         """
         self.id = id
         self.estimator = estimator
         self.finished = finished
         self.image_files = image_files
-        self.results_files = result_files
+        self.result_files = result_files
 
     @classmethod
     def all(cls):
@@ -108,8 +108,8 @@ class PredictionJob:
         attrs['image_files'] = [
             File.get(name) for name in attrs['image_files']
         ]
-        attrs['results_files'] = [
-            File.get(name) for name in attrs['results_files']
+        attrs['result_files'] = [
+            File.get(name) for name in attrs['result_files']
         ]
         return cls(**attrs)
 
