@@ -67,7 +67,7 @@ class PredictionJob:
     base_path = '/predictionjob'
 
     def __init__(self, id, estimator, finished, image_files, result_files,
-                 updated_at, created_at):
+                 updated_at, created_at, metadata):
         """Constructor
 
         Args:
@@ -84,6 +84,7 @@ class PredictionJob:
         self.result_files = result_files
         self.updated_at = updated_at
         self.created_at = created_at
+        self.metadata = metadata
 
     @classmethod
     def all(cls):
