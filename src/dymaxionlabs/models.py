@@ -109,7 +109,7 @@ class Estimator:
         response = request(
             'patch', '{base_path}/{uuid}/'.format(base_path=self.base_path,
                                                   uuid=self.uuid), body)
-        self.image_files = new_image_files
+        self.image_files = list(set(self.image_files + list(images)))
         return self
 
     def add_labels_for(self, vector_file, image_file, label):
