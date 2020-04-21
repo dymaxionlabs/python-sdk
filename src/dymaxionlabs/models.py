@@ -76,18 +76,30 @@ class Estimator:
         return cls._from_attributes(**attrs)
 
     @classmethod
-    def create(cls, *, name, type, classes, metadata=None):
+    def create(cls,
+               *,
+               name,
+               type,
+               classes,
+               training_hours=None,
+               metadata=None,
+               configuration={}):
         """Creates a new Estimator named +name+ of +type+ with +classes+ as labels
+            with +training_hours+ hour of training job
 
         A metadata dictionary can be added via the +metadata+ parameter
+        A config dictionary con be added via the +configuration+ parameter
         """
         if type not in cls.TYPES:
             raise TypeError("{} should be one of these: {}".format(
                 type, cls.TYPES.keys()))
+        if training_hours is not None:
+            configuration['training_hours'] = training_hours
         body = dict(name=name,
                     estimator_type=cls.TYPES[type],
                     classes=classes,
-                    metadata=metadata)
+                    metadata=metadata,
+                    configuration=configuration)
         response = request('post',
                            '{base_path}/'.format(base_path=cls.base_path),
                            body)
