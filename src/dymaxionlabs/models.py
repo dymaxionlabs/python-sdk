@@ -107,6 +107,18 @@ class Estimator:
                            body)
         return cls._from_attributes(**response)
 
+    def save(self):
+        """Update estimator"""
+        body = dict(name=self.name,
+                    estimator_type=self.estimator_type,
+                    classes=self.classes,
+                    metadata=self.metadata,
+                    configuration=self.configuration)
+        response = request(
+            'patch', '{base_path}/{uuid}/'.format(base_path=self.base_path,
+                                                  uuid=self.uuid), body)
+        return self._from_attributes(**response)
+
     def delete(self):
         """Delete estimator"""
         request(
