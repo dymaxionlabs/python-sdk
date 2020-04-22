@@ -110,7 +110,6 @@ class Estimator:
     def save(self):
         """Update estimator"""
         body = dict(name=self.name,
-                    estimator_type=self.estimator_type,
                     classes=self.classes,
                     metadata=self.metadata,
                     configuration=self.configuration)
