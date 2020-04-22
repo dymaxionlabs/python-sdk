@@ -20,7 +20,7 @@ class Estimator:
     base_path = '/estimators'
 
     def __init__(self, *, uuid, name, classes, estimator_type, metadata,
-                 image_files, **extra_attributes):
+                 image_files, configuration, **extra_attributes):
         """Estimator constructor
 
         Usually created when using other classmethods: all(), get(), or create()
@@ -32,6 +32,7 @@ class Estimator:
             estimator_type: type of estimator (i.e. )
             image_files: list of associated image files used for training
             metadata: user metadata
+            configuration: estimator configuration
             extra_attributes: extra attributes from API endpoint
         """
         self.uuid = uuid
@@ -40,6 +41,7 @@ class Estimator:
         self.estimator_type = estimator_type
         self.metadata = metadata
         self.image_files = image_files
+        self.configuration = configuration
         self.extra_attributes = extra_attributes
 
         self.training_job = None
