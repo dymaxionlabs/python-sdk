@@ -20,7 +20,7 @@ class Estimator:
     base_path = '/estimators'
 
     def __init__(self, *, uuid, name, classes, estimator_type, metadata,
-                 image_files, **extra_attributes):
+                 image_files, configuration, **extra_attributes):
         """Estimator constructor
 
         Usually created when using other classmethods: all(), get(), or create()
@@ -32,6 +32,7 @@ class Estimator:
             estimator_type: type of estimator (i.e. )
             image_files: list of associated image files used for training
             metadata: user metadata
+            configuration: estimator configuration
             extra_attributes: extra attributes from API endpoint
         """
         self.uuid = uuid
@@ -40,6 +41,7 @@ class Estimator:
         self.estimator_type = estimator_type
         self.metadata = metadata
         self.image_files = image_files
+        self.configuration = configuration
         self.extra_attributes = extra_attributes
 
         self.training_job = None
@@ -76,22 +78,45 @@ class Estimator:
         return cls._from_attributes(**attrs)
 
     @classmethod
-    def create(cls, *, name, type, classes, metadata=None):
+    def create(cls,
+               *,
+               name,
+               type,
+               classes,
+               training_hours=None,
+               metadata=None,
+               configuration={}):
         """Creates a new Estimator named +name+ of +type+ with +classes+ as labels
+            with +training_hours+ hour of training job
 
         A metadata dictionary can be added via the +metadata+ parameter
+        A config dictionary con be added via the +configuration+ parameter
         """
         if type not in cls.TYPES:
             raise TypeError("{} should be one of these: {}".format(
                 type, cls.TYPES.keys()))
+        if training_hours is not None:
+            configuration['training_hours'] = training_hours
         body = dict(name=name,
                     estimator_type=cls.TYPES[type],
                     classes=classes,
-                    metadata=metadata)
+                    metadata=metadata,
+                    configuration=configuration)
         response = request('post',
                            '{base_path}/'.format(base_path=cls.base_path),
                            body)
         return cls._from_attributes(**response)
+
+    def save(self):
+        """Update estimator"""
+        body = dict(name=self.name,
+                    classes=self.classes,
+                    metadata=self.metadata,
+                    configuration=self.configuration)
+        response = request(
+            'patch', '{base_path}/{uuid}/'.format(base_path=self.base_path,
+                                                  uuid=self.uuid), body)
+        return self._from_attributes(**response)
 
     def delete(self):
         """Delete estimator"""
