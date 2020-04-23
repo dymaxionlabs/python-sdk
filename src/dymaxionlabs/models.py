@@ -58,6 +58,8 @@ class Estimator:
         attrs['image_files'] = [
             File.get(name) for name in attrs['image_files']
         ]
+        #TODO: Delete this line before merge
+        attrs['configuration'] = {}
         return cls(**attrs)
 
     @classmethod
@@ -97,11 +99,11 @@ class Estimator:
                 type, cls.TYPES.keys()))
         if training_hours is not None:
             configuration['training_hours'] = training_hours
+        #TODO:Rewrite config param in body before merge
         body = dict(name=name,
                     estimator_type=cls.TYPES[type],
                     classes=classes,
-                    metadata=metadata,
-                    configuration=configuration)
+                    metadata=metadata)
         response = request('post',
                            '{base_path}/'.format(base_path=cls.base_path),
                            body)

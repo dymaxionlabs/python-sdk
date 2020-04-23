@@ -3,31 +3,19 @@ from .models import Estimator
 from .utils import fetch_from_list_request, request
 
 
-class TrainingJob:
-    """
-    Class that represents a TrainingJob in DymaxionLabs API
-
-    A TrainingJob is a background job that crates a model using a
-    previously loaded files and annotation realted to a Estimator.
-    """
-
-    base_path = '/estimators'
-
-    def __init__(self, id, estimator, finished, updated_at, created_at,
-                 metadata):
-        """Constructor
-
-        Args:
-            id: PredictionJob id
-            estimator: related estimator instance
-            finished: TrainingJob's state
-        """
+class Job:
+    def __init__(self, id, name, updated_at, created_at, finished_at, state,
+                 metadata, internal_metadata, args, kwargs):
         self.id = id
+        self.name = name
         self.updated_at = updated_at
         self.created_at = created_at
-        self.estimator = estimator
-        self.finished = finished
+        self.finished_at = finished_at
+        self.state = state
         self.metadata = metadata
+        self.internal_metadata = internal_metadata
+        self.args = args
+        self.kwargs = kwargs
 
     @classmethod
     def _from_attributes(cls, attrs):
@@ -37,23 +25,46 @@ class TrainingJob:
 
         Used internally by other class methods
         """
-        attrs['estimator'] = Estimator.get(attrs['estimator'])
-        return cls(**attrs)
+        #TODO use attrs directly
+        body = {
+            'state': attrs['state'],
+            'created_at': attrs['created_at'],
+            'updated_at': attrs['updated_at'],
+            'name': attrs['name'],
+            'finished_at': attrs['finished_at'],
+            'metadata': attrs['metadata'],
+            'id': attrs['id'],
+            'internal_metadata': attrs['internal_metadata'],
+            'args': attrs['args'],
+            'kwargs': attrs['kwargs']
+        }
+        return cls(**body)
+
+
+class TrainingJob(Job):
+    """
+    Class that represents a TrainingJob in DymaxionLabs API
+
+    A TrainingJob is a background job that crates a model using a
+    previously loaded files and annotation realted to a Estimator.
+    """
+
+    base_path = '/estimators'
 
     def is_running(self):
         """Decides whether job is running or not"""
-        if self.finished:
+        if self.state == 'FINISHED' or self.state == 'FAILED':
             return False
         self.refresh()
-        return not self.finished
+        return not (self.state == 'FINISHED' or self.state == 'FAILED')
 
     def refresh(self):
         """Refresh status of the job"""
         attrs = request(
-            'get',
-            '{base_path}/{uuid}/finished/'.format(base_path=self.base_path,
-                                                  uuid=self.estimator.uuid))
-        self.finished = attrs['detail']
+            'get', '{base_path}/{uuid}/finished/'.format(
+                base_path=self.base_path,
+                uuid=self.internal_metadata['estimator']))
+        self.state = attrs['detail']
 
 
 class PredictionJob:
