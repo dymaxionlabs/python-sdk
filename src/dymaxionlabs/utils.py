@@ -1,6 +1,6 @@
 import json
 import os
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 
 import requests
 
@@ -27,17 +27,27 @@ def get_api_key():
     return os.environ.get("DYM_API_KEY")
 
 
-def request(method, path, body=None, params={}, headers={}, binary=False, parse_response=True):
+def request(method,
+            path,
+            body=None,
+            params={},
+            headers={},
+            binary=False,
+            parse_response=True):
     """Makes an HTTP request to the API"""
     headers = {'Authorization': 'Api-Key {}'.format(get_api_key()), **headers}
     request_method = getattr(requests, method)
-    url = '{url}{path}'.format(url=get_api_url(), path=path)
+    url = urljoin(get_api_url(), path)
     if binary:
-        response = request_method(
-            url, data=body, params=params, headers=headers)
+        response = request_method(url,
+                                  data=body,
+                                  params=params,
+                                  headers=headers)
     else:
-        response = request_method(
-            url, json=body, params=params, headers=headers)
+        response = request_method(url,
+                                  json=body,
+                                  params=params,
+                                  headers=headers)
     code = response.status_code
 
     # Error handling
@@ -67,7 +77,6 @@ def fetch_from_list_request(path, params={}):
     if response['next']:
         p = urlparse(response['next'])
         new_path = '{}?{}#{}'.format(p.path, p.query, p.fragment)
-        next_items = fetch_from_list_request(
-            path=new_path, params=params)
+        next_items = fetch_from_list_request(path=new_path, params=params)
         res.extend(next_items)
     return res
