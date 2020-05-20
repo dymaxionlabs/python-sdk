@@ -58,6 +58,8 @@ class Estimator:
         attrs['image_files'] = [
             File.get(name) for name in attrs['image_files']
         ]
+        #TODO: Delete this line before merge
+        attrs['configuration'] = {}
         return cls(**attrs)
 
     @classmethod
@@ -97,11 +99,11 @@ class Estimator:
                 type, cls.TYPES.keys()))
         if training_hours is not None:
             configuration['training_hours'] = training_hours
+        #TODO:Rewrite config param in body before merge
         body = dict(name=name,
                     estimator_type=cls.TYPES[type],
                     classes=classes,
-                    metadata=metadata,
-                    configuration=configuration)
+                    metadata=metadata)
         response = request('post',
                            '{base_path}/'.format(base_path=cls.base_path),
                            body)
@@ -156,7 +158,7 @@ class Estimator:
         return self
 
     def train(self):
-        from .jobs import TrainingJob
+        from .tasks import Task
         """Train
 
         This function will start a training job over the current estimator.
@@ -169,11 +171,11 @@ class Estimator:
         response = request(
             'post', '{base_path}/{uuid}/train'.format(base_path=self.base_path,
                                                       uuid=self.uuid))
-        self.training_job = TrainingJob._from_attributes(response['detail'])
+        self.training_job = Task._from_attributes(response['detail'])
         return self.training_job
 
     def predict_files(self, *files):
-        from .jobs import PredictionJob
+        from .tasks import Task
         """Predict files
 
         This function will start a prediction job over the specified files.
@@ -196,7 +198,7 @@ class Estimator:
                            path,
                            body={'files': [f.name for f in files]})
         job_attrs = response['detail']
-        self.prediction_job = PredictionJob._from_attributes(job_attrs)
+        self.prediction_job = Task._from_attributes(job_attrs)
         return self.prediction_job
 
     def __repr__(self):
