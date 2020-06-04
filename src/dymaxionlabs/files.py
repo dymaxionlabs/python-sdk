@@ -5,44 +5,46 @@ from .utils import fetch_from_list_request, request
 
 
 class File:
-    base_path = '/files'
+    base_path = '/storage'
 
-    def __init__(self, name, metadata, **extra_attributes):
+    def __init__(self, name, path, metadata, **extra_attributes):
         """The File class represents files stored in Dymaxion Labs.
 
         Files are owned by the authenticated user.
 
         Args:
             name: file name
+            path: file path
             metadata: file metadata
             extra_attributes: extra attributes from API endpoint
 
         """
         self.name = name
+        self.path = path
         self.metadata = metadata
         self.extra_attributes = extra_attributes
 
     @classmethod
-    def all(cls):
-        """Fetch all files in project"""
-        return [
-            File(**attrs)
-            for attrs in fetch_from_list_request(cls.base_path + '/')
-        ]
+    def all(cls, path="*"):
+        response = request('get',
+                           '/storage/files/?path={path}'.format(path=path))
+        return [File(**attrs) for attrs in response]
 
     @classmethod
-    def get(cls, name):
-        """Get a specific File named +name+"""
+    def get(cls, path):
+        """Get a specific File in +path+"""
         attrs = request(
-            'get', '{base_path}/{name}'.format(base_path=cls.base_path,
-                                               name=name))
+            'get',
+            '{base_path}/file/?path={path}'.format(base_path=cls.base_path,
+                                                   path=path))
         return File(**attrs)
 
     def delete(self):
         """Delete file"""
         request(
-            'delete', '{base_path}/{name}'.format(base_path=self.base_path,
-                                                  name=self.name))
+            'delete',
+            '{base_path}/file/?path={path}'.format(base_path=self.base_path,
+                                                   path=self.path))
         return True
 
     @classmethod
