@@ -22,6 +22,7 @@ class File:
         self.name = name
         self.path = path
         self.metadata = metadata
+        self.tailing_job = None
         self.extra_attributes = extra_attributes
 
     @classmethod
@@ -37,7 +38,7 @@ class File:
             'get',
             '{base_path}/file/?path={path}'.format(base_path=cls.base_path,
                                                    path=path))
-        return File(**attrs)
+        return File(**attrs['detail'])
 
     def delete(self):
         """Delete file"""
@@ -48,11 +49,12 @@ class File:
         return True
 
     @classmethod
-    def upload(cls, input_path):
+    def upload(cls, input_path, storage_path):
         """Upload a file to storage
 
         Args:
-            filename -- path to local file
+            input_path -- path to local file
+            storage_path -- destination path
 
         Raises:
             FileNotFoundError: Path
@@ -60,16 +62,13 @@ class File:
         filename = os.path.basename(input_path)
         with open(input_path, 'rb') as fp:
             data = fp.read()
-        path = '{base_path}/upload/{filename}'.format(base_path=cls.base_path,
-                                                      filename=filename)
-        response = request('post',
-                           path,
-                           headers={
-                               'Content-Type':
-                               mimetypes.MimeTypes().guess_type(filename)[0]
-                           },
-                           body=data,
-                           binary=True)
+        path = '{base_path}/upload/'.format(base_path=cls.base_path)
+        response = request(
+            'post',
+            path,
+            body={'path': storage_path},
+            files={'file': data},
+        )
         return File(**response['detail'])
 
     def download(self, output_dir="."):
@@ -88,6 +87,14 @@ class File:
         output_file = os.path.join(output_dir, self.name)
         with open(output_file, 'wb') as f:
             f.write(content)
+
+    def tailing(self):
+        from .tasks import Task
+        response = request('post',
+                           '/estimators/start_tailing_job/',
+                           body={'path': self.path})
+        self.tailing_job = Task._from_attributes(response['detail'])
+        return self.tailing_job
 
     def __repr__(self):
         return "<File name={name!r}".format(name=self.name)

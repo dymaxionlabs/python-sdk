@@ -30,6 +30,7 @@ def get_api_key():
 def request(method,
             path,
             body=None,
+            files=None,
             params={},
             headers={},
             binary=False,
@@ -38,16 +39,23 @@ def request(method,
     headers = {'Authorization': 'Api-Key {}'.format(get_api_key()), **headers}
     request_method = getattr(requests, method)
     url = urljoin(get_api_url(), path)
-    if binary:
+    if files:
         response = request_method(url,
+                                  files=files,
                                   data=body,
                                   params=params,
                                   headers=headers)
     else:
-        response = request_method(url,
-                                  json=body,
-                                  params=params,
-                                  headers=headers)
+        if binary:
+            response = request_method(url,
+                                      data=body,
+                                      params=params,
+                                      headers=headers)
+        else:
+            response = request_method(url,
+                                      json=body,
+                                      params=params,
+                                      headers=headers)
     code = response.status_code
 
     # Error handling
