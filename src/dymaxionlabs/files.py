@@ -82,8 +82,8 @@ class File:
         """
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
-        path = '{base_path}/download/{name}'.format(base_path=self.base_path,
-                                                    name=self.name)
+        path = '{base_path}/download/?path={path}'.format(
+            base_path=self.base_path, path=self.path)
         content = request('get', path, binary=True, parse_response=False)
         output_file = os.path.join(output_dir, self.name)
         with open(output_file, 'wb') as f:
