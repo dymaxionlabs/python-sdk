@@ -90,7 +90,7 @@ class File:
         return File(**response['detail'])
 
     @classmethod
-    def upload(cls, input_path, storage_path):
+    def upload(cls, input_path, storage_path=""):
         """Upload a file to storage
 
         Args:
@@ -100,6 +100,9 @@ class File:
         Raises:
             FileNotFoundError: Path
         """
+        if storage_path.strip() == "" or list(storage_path).pop() == "/":
+            storage_path = "".join(
+                [storage_path, os.path.basename(input_path)])
         if (os.path.getsize(input_path) > 1024 * 1024):
             file = cls._resumable_upload(input_path, storage_path)
         else:
