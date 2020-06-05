@@ -58,8 +58,8 @@ class File:
         return response
 
     @classmethod
-    def _resumable_upload(cls, input_path, storage_path):
-        chunk_size = 1024 * 1024  # 1MB
+    def _resumable_upload(cls, input_path, storage_path, chunk_size):
+        chunk_size = 1024 * 1024 if chunk_size is None else 1024 * 1024 * chunk_size
         total_size = os.path.getsize(input_path)
         f = open(input_path, "rb")
         stream = io.BytesIO(f.read())
@@ -99,12 +99,13 @@ class File:
         return File(**response['detail'])
 
     @classmethod
-    def upload(cls, input_path, storage_path=""):
+    def upload(cls, input_path, storage_path="", chunk_size=None):
         """Upload a file to storage
 
         Args:
             input_path -- path to local file
             storage_path -- destination path
+            chunk_size -- size [MB] of chunks for resumable uploading
 
         Raises:
             FileNotFoundError: Path
@@ -114,7 +115,7 @@ class File:
             storage_path = "".join(
                 [storage_path, os.path.basename(input_path)])
         if (os.path.getsize(input_path) > 1024 * 1024):
-            file = cls._resumable_upload(input_path, storage_path)
+            file = cls._resumable_upload(input_path, storage_path, chunk_size)
         else:
             file = cls._upload(input_path, storage_path)
         return file
