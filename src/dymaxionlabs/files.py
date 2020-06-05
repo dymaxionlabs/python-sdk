@@ -60,6 +60,7 @@ class File:
     @classmethod
     def _resumable_upload(cls, input_path, storage_path):
         chunk_size = 1024 * 1024  # 1MB
+        total_size = os.path.getsize(input_path)
         f = open(input_path, "rb")
         stream = io.BytesIO(f.read())
         metadata = {u'name': os.path.basename(input_path)}
@@ -71,12 +72,19 @@ class File:
             mimetypes.MimeTypes().guess_type(input_path)[0],
             res['session_url'],
         )
+        print("Uploaded 0 %", end='\r', flush=True)
         while (not upload.finished):
             upload.transmit_next_chunk()
+            print("Uploaded {} %".format(
+                int(upload.bytes_uploaded * 100 / total_size)),
+                  end='\r',
+                  flush=True)
+        print("")
         return cls.get(storage_path)
 
     @classmethod
     def _upload(cls, input_path, storage_path):
+        print("Uploaded 0 %", end='\r', flush=True)
         filename = os.path.basename(input_path)
         with open(input_path, 'rb') as fp:
             data = fp.read()
@@ -87,6 +95,7 @@ class File:
             body={'path': storage_path},
             files={'file': data},
         )
+        print("Uploaded 100 %")
         return File(**response['detail'])
 
     @classmethod
@@ -100,6 +109,7 @@ class File:
         Raises:
             FileNotFoundError: Path
         """
+        print("Uploading {}...".format(os.path.basename(input_path)))
         if storage_path.strip() == "" or list(storage_path).pop() == "/":
             storage_path = "".join(
                 [storage_path, os.path.basename(input_path)])
