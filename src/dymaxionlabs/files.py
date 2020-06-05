@@ -1,7 +1,9 @@
 import mimetypes
+import io
 import os
 
 from .utils import fetch_from_list_request, request
+from .upload import CustomResumableUpload
 
 
 class File:
@@ -49,16 +51,32 @@ class File:
         return True
 
     @classmethod
-    def upload(cls, input_path, storage_path):
-        """Upload a file to storage
+    def _resumable_url(cls, storage_path, size):
+        url_path = '{base_path}/create-resumable-upload/?path={path}&size={size}'.format(
+            base_path=cls.base_path, path=storage_path, size=size)
+        response = request('post', url_path)
+        return response
 
-        Args:
-            input_path -- path to local file
-            storage_path -- destination path
+    @classmethod
+    def _resumable_upload(cls, input_path, storage_path):
+        chunk_size = 1024 * 1024  # 1MB
+        f = open(input_path, "rb")
+        stream = io.BytesIO(f.read())
+        metadata = {u'name': os.path.basename(input_path)}
+        res = cls._resumable_url(storage_path, os.path.getsize(input_path))
+        upload = CustomResumableUpload(res['session_url'], chunk_size)
+        upload.initiate(
+            stream,
+            metadata,
+            mimetypes.MimeTypes().guess_type(input_path)[0],
+            res['session_url'],
+        )
+        while (not upload.finished):
+            upload.transmit_next_chunk()
+        return cls.get(storage_path)
 
-        Raises:
-            FileNotFoundError: Path
-        """
+    @classmethod
+    def _upload(cls, input_path, storage_path):
         filename = os.path.basename(input_path)
         with open(input_path, 'rb') as fp:
             data = fp.read()
@@ -70,6 +88,23 @@ class File:
             files={'file': data},
         )
         return File(**response['detail'])
+
+    @classmethod
+    def upload(cls, input_path, storage_path):
+        """Upload a file to storage
+
+        Args:
+            input_path -- path to local file
+            storage_path -- destination path
+
+        Raises:
+            FileNotFoundError: Path
+        """
+        if (os.path.getsize(input_path) > 1024 * 1024):
+            file = cls._resumable_upload(input_path, storage_path)
+        else:
+            file = cls._upload(input_path, storage_path)
+        return file
 
     def download(self, output_dir="."):
         """Download file and save it to +output_dir+
