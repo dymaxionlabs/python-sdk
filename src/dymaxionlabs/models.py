@@ -1,5 +1,5 @@
 import json
-
+import os
 import requests
 
 from .files import File
@@ -56,10 +56,9 @@ class Estimator:
         Used internally by other class methods
         """
         attrs['image_files'] = [
-            File.get(name) for name in attrs['image_files']
+            File(name=os.path.basename(path), path=path, metadata=None)
+            for path in attrs['image_files']
         ]
-        #TODO: Delete this line before merge
-        attrs['configuration'] = {}
         return cls(**attrs)
 
     @classmethod
@@ -99,11 +98,11 @@ class Estimator:
                 type, cls.TYPES.keys()))
         if training_hours is not None:
             configuration['training_hours'] = training_hours
-        #TODO:Rewrite config param in body before merge
         body = dict(name=name,
                     estimator_type=cls.TYPES[type],
                     classes=classes,
-                    metadata=metadata)
+                    metadata=metadata,
+                    configuration=configuration)
         response = request('post',
                            '{base_path}/'.format(base_path=cls.base_path),
                            body)
@@ -130,7 +129,7 @@ class Estimator:
     def add_image(self, *images):
         """Add an Image File to the estimator, for training"""
         new_image_files = [
-            img.name for img in set(self.image_files + list(images))
+            img.path for img in set(self.image_files + list(images))
         ]
         body = dict(image_files=new_image_files)
         response = request(
@@ -148,8 +147,8 @@ class Estimator:
             raise ValueError(
                 "Label '{}' is invalid. Must be one of: {}".format(
                     label, self.classes))
-        body = dict(vector_file=vector_file.name,
-                    related_file=image_file.name,
+        body = dict(vector_file=vector_file.path,
+                    related_file=image_file.path,
                     label=label)
         response = request(
             'post',
@@ -196,7 +195,7 @@ class Estimator:
                                                     uuid=self.uuid)
         response = request('post',
                            path,
-                           body={'files': [f.name for f in files]})
+                           body={'files': [f.path for f in files]})
         job_attrs = response['detail']
         self.prediction_job = Task._from_attributes(job_attrs)
         return self.prediction_job
