@@ -1,5 +1,5 @@
 import json
-
+import os
 import requests
 
 from .files import File
@@ -56,7 +56,8 @@ class Estimator:
         Used internally by other class methods
         """
         attrs['image_files'] = [
-            File.get(path) for path in attrs['image_files']
+            File(name=os.path.basename(path), path=path, metadata=None)
+            for path in attrs['image_files']
         ]
         return cls(**attrs)
 

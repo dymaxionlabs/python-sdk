@@ -5,6 +5,9 @@ import os
 from .utils import fetch_from_list_request, request
 from .upload import CustomResumableUpload
 
+MIN_SIZE_RESUMABLE_UPLOAD = 1024 * 1024  #1MB
+DEFAULT_CHUNK_SIZE = 1024 * 1024  #1MB
+
 
 class File:
     base_path = '/storage'
@@ -24,7 +27,7 @@ class File:
         self.name = name
         self.path = path
         self.metadata = metadata
-        self.tailing_job = None
+        self.tiling_job = None
         self.extra_attributes = extra_attributes
 
     @classmethod
@@ -59,7 +62,7 @@ class File:
 
     @classmethod
     def _resumable_upload(cls, input_path, storage_path, chunk_size):
-        chunk_size = 1024 * 1024 if chunk_size is None else 1024 * 1024 * chunk_size
+        chunk_size = DEFAULT_CHUNK_SIZE if chunk_size is None else DEFAULT_CHUNK_SIZE * chunk_size
         total_size = os.path.getsize(input_path)
         f = open(input_path, "rb")
         stream = io.BytesIO(f.read())
@@ -114,7 +117,7 @@ class File:
         if storage_path.strip() == "" or list(storage_path).pop() == "/":
             storage_path = "".join(
                 [storage_path, os.path.basename(input_path)])
-        if (os.path.getsize(input_path) > 1024 * 1024):
+        if (os.path.getsize(input_path) > MIN_SIZE_RESUMABLE_UPLOAD):
             file = cls._resumable_upload(input_path, storage_path, chunk_size)
         else:
             file = cls._upload(input_path, storage_path)
@@ -137,13 +140,13 @@ class File:
         with open(output_file, 'wb') as f:
             f.write(content)
 
-    def tailing(self):
+    def tiling(self):
         from .tasks import Task
         response = request('post',
-                           '/estimators/start_tailing_job/',
+                           '/estimators/start_tiling_job/',
                            body={'path': self.path})
-        self.tailing_job = Task._from_attributes(response['detail'])
-        return self.tailing_job
+        self.tiling_job = Task._from_attributes(response['detail'])
+        return self.tiling_job
 
     def __repr__(self):
         return "<File name={name!r}".format(name=self.name)
