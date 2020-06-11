@@ -33,7 +33,7 @@ class Task:
         """Decides whether job is running or not"""
         if self.state == 'FINISHED' or self.state == 'FAILED':
             return False
-        self.refresh()
+        self = self.refresh()
         return not (self.state == 'FINISHED' or self.state == 'FAILED')
 
     def refresh(self):
