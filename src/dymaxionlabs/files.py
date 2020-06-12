@@ -141,8 +141,8 @@ class File:
             f.write(content)
 
     def tiling(self, output_path):
-        if output_path is None:
-            raise ValueError("Output path can not be null")
+        if not output_path:
+            raise RuntimeError("Output path can not be null")
         from .tasks import Task
         response = request('post',
                            '/estimators/start_tiling_job/',
