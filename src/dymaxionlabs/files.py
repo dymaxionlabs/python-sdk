@@ -140,11 +140,16 @@ class File:
         with open(output_file, 'wb') as f:
             f.write(content)
 
-    def tiling(self):
+    def tiling(self, output_path):
+        if output_path is None:
+            raise ValueError("Output path can not be null")
         from .tasks import Task
         response = request('post',
                            '/estimators/start_tiling_job/',
-                           body={'path': self.path})
+                           body={
+                               'path': self.path,
+                               'output_path': output_path
+                           })
         self.tiling_job = Task._from_attributes(response['detail'])
         return self.tiling_job
 
