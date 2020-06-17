@@ -33,7 +33,7 @@ class Task:
         """Decides whether job is running or not"""
         if self.state == 'FINISHED' or self.state == 'FAILED':
             return False
-        self = self.refresh()
+        self.refresh()
         return not (self.state == 'FINISHED' or self.state == 'FAILED')
 
     def refresh(self):
@@ -41,4 +41,5 @@ class Task:
         attrs = request(
             'get', '{base_path}/{id}'.format(base_path=self.base_path,
                                              id=self.id))
-        return self._from_attributes(attrs)
+        self.__dict__.update(self._from_attributes(attrs).__dict__)
+        return self
