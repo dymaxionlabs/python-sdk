@@ -1,6 +1,7 @@
 import mimetypes
 import io
 import os
+import requests
 
 from .utils import fetch_from_list_request, request
 from .upload import CustomResumableUpload
@@ -32,17 +33,17 @@ class File:
 
     @classmethod
     def all(cls, path="*"):
-        response = request('get',
-                           '/storage/files/?path={path}'.format(path=path))
+        response = request(
+            'get', '/storage/files/?path={path}'.format(
+                path=requests.utils.quote(path)))
         return [File(**attrs) for attrs in response]
 
     @classmethod
     def get(cls, path):
         """Get a specific File in +path+"""
         attrs = request(
-            'get',
-            '{base_path}/file/?path={path}'.format(base_path=cls.base_path,
-                                                   path=path))
+            'get', '{base_path}/file/?path={path}'.format(
+                base_path=cls.base_path, path=requests.utils.quote(path)))
         return File(**attrs['detail'])
 
     def delete(self):
@@ -50,13 +51,16 @@ class File:
         request(
             'delete',
             '{base_path}/file/?path={path}'.format(base_path=self.base_path,
-                                                   path=self.path))
+                                                   path=requests.utils.quote(
+                                                       self.path)))
         return True
 
     @classmethod
     def _resumable_url(cls, storage_path, size):
         url_path = '{base_path}/create-resumable-upload/?path={path}&size={size}'.format(
-            base_path=cls.base_path, path=storage_path, size=size)
+            base_path=cls.base_path,
+            path=requests.utils.quote(storage_path),
+            size=size)
         response = request('post', url_path)
         return response
 
@@ -134,7 +138,7 @@ class File:
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
         path = '{base_path}/download/?path={path}'.format(
-            base_path=self.base_path, path=self.path)
+            base_path=self.base_path, path=requests.utils.quote(self.path))
         content = request('get', path, binary=True, parse_response=False)
         output_file = os.path.join(output_dir, self.name)
         with open(output_file, 'wb') as f:
