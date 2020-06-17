@@ -144,7 +144,7 @@ class File:
         with open(output_file, 'wb') as f:
             f.write(content)
 
-    def tiling(self, output_path):
+    def tiling(self, output_path, tile_size=500):
         if not output_path:
             raise RuntimeError("Output path can not be null")
         from .tasks import Task
@@ -152,7 +152,8 @@ class File:
                            '/estimators/start_tiling_job/',
                            body={
                                'path': self.path,
-                               'output_path': output_path
+                               'output_path': output_path,
+                               'tile_size': tile_size,
                            })
         self.tiling_job = Task._from_attributes(response['detail'])
         return self.tiling_job
