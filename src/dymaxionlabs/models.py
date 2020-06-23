@@ -173,7 +173,7 @@ class Estimator:
         self.training_job = Task._from_attributes(response['detail'])
         return self.training_job
 
-    def predict_files(self, *files, output_path):
+    def predict_files(self, *files, output_path, confidence=0.1):
         from .tasks import Task
         """Predict files
 
@@ -193,13 +193,16 @@ class Estimator:
             raise RuntimeError("files is empty")
         if not output_path:
             raise RuntimeError("Output path can not be null")
+        if not (confidence >= 0.0 and confidence <= 1):
+            raise RuntimeError("Confidence's value has to be betwen 0.0 and 1")
         path = '{base_path}/{uuid}/predict/'.format(base_path=self.base_path,
                                                     uuid=self.uuid)
         response = request('post',
                            path,
                            body={
                                'files': [f.path for f in files],
-                               'output_path': output_path
+                               'output_path': output_path,
+                               'confidence': confidence,
                            })
         job_attrs = response['detail']
         self.prediction_job = Task._from_attributes(job_attrs)
