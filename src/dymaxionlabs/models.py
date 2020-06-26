@@ -173,7 +173,7 @@ class Estimator:
         self.training_job = Task._from_attributes(response['detail'])
         return self.training_job
 
-    def predict_files(self, *files, output_path, confidence=0.1):
+    def predict_files(self, *files, output_path, confidence=0.2):
         from .tasks import Task
         """Predict files
 
