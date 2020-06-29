@@ -72,15 +72,19 @@ model, and there is only one class of object.
                                     classes=["pool"])
 
 
-Now, you should upload the images you want to use for training, and add them
-to your estimator.
+Now, you should upload the images you want to use for training, add them
+to your estimator, and create the tiles from the image.
 
 .. code-block:: python
 
   from dymaxionlabs.files import File
 
-  img = File.upload("pools-2020-02-01.tif")
+  img = File.upload("pools-2020-02-01.tif", 'pools/images/')
   pools_detector.add_image(img)
+
+  tiling_job = img.tiling(output_path='pools/tiles/')
+  tiling_job.is_running()
+  #=> True
 
 
 Next step is to upload your labels file (GeoJSON file) and add them to your
@@ -90,7 +94,7 @@ different files for each class.
 
 .. code-block:: python
 
-  labels = File.upload("labels.geojson")
+  labels = File.upload("labels.geojson", 'pools/labels/')
   pools_detector.add_labels_for(labels, img, "pool")
 
 
@@ -107,6 +111,33 @@ the current training job.
 
 
 When the job finishes, your model will be ready to be used for prediction.
+
+You should upload another image you want to predict, and again create
+ the tiles from the image.
+
+ .. code-block:: python
+
+  predict_img = File.upload("pools.tif", 'pools/[redict-images/')
+  tiling_job = predict_img.tiling(output_path='pools/predict-tiles/')
+  tiling_job.is_running()
+  #=> True
+
+And now you are avaible to predict in your estimator, the prediction job might take
+a few minutes.
+
+ .. code-block:: python
+
+  pools_detector.predict_files(predict_img, output_path='pools/predict-results/')
+  pools_detector.prediction_job.is_running()
+  #=> True
+
+
+You can download de results when the prediction job is finished.
+
+ .. code-block:: python
+
+  for path in pools_detector.prediction_job.metadata["results_files"]:
+    File.get(path).download("results/")
 
 
 Contents
