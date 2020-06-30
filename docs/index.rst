@@ -113,9 +113,9 @@ the current training job.
 When the job finishes, your model will be ready to be used for prediction.
 
 You should upload another image you want to predict, and again create
- the tiles from the image.
+the tiles from the image.
 
- .. code-block:: python
+.. code-block:: python
 
   predict_img = File.upload("pools.tif", 'pools/[redict-images/')
   tiling_job = predict_img.tiling(output_path='pools/predict-tiles/')
@@ -125,7 +125,7 @@ You should upload another image you want to predict, and again create
 And now you are avaible to predict in your estimator, the prediction job might take
 a few minutes.
 
- .. code-block:: python
+.. code-block:: python
 
   pools_detector.predict_files(predict_img, output_path='pools/predict-results/')
   pools_detector.prediction_job.is_running()
@@ -134,7 +134,7 @@ a few minutes.
 
 You can download de results when the prediction job is finished.
 
- .. code-block:: python
+.. code-block:: python
 
   for path in pools_detector.prediction_job.metadata["results_files"]:
     File.get(path).download("results/")
