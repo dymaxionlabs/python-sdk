@@ -117,7 +117,7 @@ the tiles from the image.
 
 .. code-block:: python
 
-  predict_img = File.upload("pools.tif", 'pools/[redict-images/')
+  predict_img = File.upload("pools.tif", 'pools/predict-images/')
   tiling_job = predict_img.tiling(output_path='pools/predict-tiles/')
   tiling_job.is_running()
   #=> True
