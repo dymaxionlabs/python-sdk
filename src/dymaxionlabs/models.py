@@ -182,7 +182,7 @@ class Estimator:
         into +output_path+.
 
         Args:
-            files: array of File to predict
+            file_folders: array of folders with tiles to predict
             output_path: results output path
             confidence: confidence minimun value for prediction results
 
