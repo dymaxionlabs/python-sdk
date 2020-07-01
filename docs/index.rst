@@ -122,7 +122,7 @@ the tiles from the image.
   tiling_job.is_running()
   #=> True
 
-And now you are avaible to predict in your estimator, the prediction job might take
+And now you are able to predict in your estimator, the prediction job might take
 a few minutes.
 
 .. code-block:: python
@@ -132,7 +132,7 @@ a few minutes.
   #=> True
 
 
-You can download de results when the prediction job is finished.
+You can download the results when the prediction job is finished.
 
 .. code-block:: python
 
