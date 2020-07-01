@@ -33,6 +33,7 @@ class File:
 
     @classmethod
     def all(cls, path="*"):
+        """Get all File in +path+"""
         response = request(
             'get', '/storage/files/?path={path}'.format(
                 path=requests.utils.quote(path)))
@@ -145,6 +146,19 @@ class File:
             f.write(content)
 
     def tiling(self, output_path, tile_size=500):
+        """Tiling
+
+        This function will start a tiling job over the specified file.
+        You can set the +tile_size+ that you want for the output tiles and
+        the +output_path+ for the path where the tiles will be storage
+
+        Args:
+            output_path: storage folder
+            tile_size: tile size
+
+        Returns:
+            Returns a Task with info about the new tailing job
+        """
         if not output_path:
             raise RuntimeError("Output path can not be null")
         from .tasks import Task

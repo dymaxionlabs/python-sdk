@@ -9,6 +9,21 @@ class Task:
 
     def __init__(self, id, name, updated_at, created_at, finished_at, state,
                  metadata, args, kwargs):
+        """Task constructor
+
+        Used to represent backend jobs
+
+        Args:
+            id: internal id
+            name: name
+            updated_at: updated datetime
+            created_at: created datetime
+            finished_at: finished datetime
+            state: job state
+            metadata: job metadata
+            args: args
+            kwargs: kwargs
+        """
         self.id = id
         self.name = name
         self.updated_at = updated_at
@@ -30,7 +45,7 @@ class Task:
         return cls(**attrs)
 
     def is_running(self):
-        """Decides whether job is running or not"""
+        """Decides whether job is running or not and update the job attrs if is necesary"""
         if self.state == 'FINISHED' or self.state == 'FAILED':
             return False
         self.refresh()

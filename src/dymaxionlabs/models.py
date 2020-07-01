@@ -177,14 +177,14 @@ class Estimator:
         from .tasks import Task
         """Predict files
 
-        This function will start a prediction job over the specified files.
-        You can predict over already upload images by providing a list of
-        +remote_files+, or over images in your disk by providing a list of
-        +local_files+.  Local files will be uploaded before prediction.
+        This function will start a prediction job over the specified +files+,
+        and it will store the result with the specified +confidence+ or grater
+        into +output_path+.
 
         Args:
-            remote_files: array of string with the names of already uploaded files
-            local_files: array of string with the names of local files
+            files: array of File to predict
+            output_path: results output path
+            confidence: confidence minimun value for prediction results
 
         Returns:
             Returns a dict with info about the new PredictionJob

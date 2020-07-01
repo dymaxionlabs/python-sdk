@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-from dymaxionlabs import model
-from dymaxionlabs import file
+from dymaxionlabs import models
+from dymaxionlabs import files
 
 __author__ = "Dymaxion Labs"
 __copyright__ = "Dymaxion Labs"
