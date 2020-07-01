@@ -118,7 +118,8 @@ the tiles from the image.
 .. code-block:: python
 
   predict_img = File.upload("pools.tif", 'pools/predict-images/')
-  tiling_job = predict_img.tiling(output_path='pools/predict-tiles/')
+  predict_tiles_folder = 'pools/predict-tiles/'
+  tiling_job = predict_img.tiling(output_path=predict_tiles_folder)
   tiling_job.is_running()
   #=> True
 
@@ -127,7 +128,7 @@ a few minutes.
 
 .. code-block:: python
 
-  pools_detector.predict_files(predict_img, output_path='pools/predict-results/')
+  pools_detector.predict_files([predict_tiles_folder], output_path='pools/predict-results/')
   pools_detector.prediction_job.is_running()
   #=> True
 

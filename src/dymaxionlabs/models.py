@@ -173,7 +173,7 @@ class Estimator:
         self.training_job = Task._from_attributes(response['detail'])
         return self.training_job
 
-    def predict_files(self, *files, output_path, confidence=0.2):
+    def predict_files(self, file_folders, output_path, confidence=0.2):
         from .tasks import Task
         """Predict files
 
@@ -182,7 +182,7 @@ class Estimator:
         into +output_path+.
 
         Args:
-            files: array of File to predict
+            file_folders: array of folders with tiles to predict
             output_path: results output path
             confidence: confidence minimun value for prediction results
 
@@ -200,7 +200,7 @@ class Estimator:
         response = request('post',
                            path,
                            body={
-                               'files': [f.path for f in files],
+                               'files': file_folders,
                                'output_path': output_path,
                                'confidence': confidence,
                            })
