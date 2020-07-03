@@ -173,4 +173,4 @@ class File:
         return self.tiling_job
 
     def __repr__(self):
-        return "<File name={name!r}".format(name=self.name)
+        return "<dymaxionlabs.file.File name=\"{name}\"".format(name=self.name)

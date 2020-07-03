@@ -189,8 +189,8 @@ class Estimator:
         Returns:
             Returns a dict with info about the new PredictionJob
         """
-        if not files:
-            raise RuntimeError("files is empty")
+        if not file_folders:
+            raise RuntimeError("File folders is empty")
         if not output_path:
             raise RuntimeError("Output path can not be null")
         if not (confidence >= 0.0 and confidence <= 1):

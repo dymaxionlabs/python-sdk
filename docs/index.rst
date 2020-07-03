@@ -32,7 +32,7 @@ Install the latest client package via pip:
 Authentication
 ==============
 
-Sing up at https://app.dymaxionlabs.com/signup if you don't have a user yet,
+Sign up at https://app.dymaxionlabs.com/signup if you don't have a user yet,
 otherwise log in.
 
 Enter the API Key section, create a new API key and copy the generated key.
