@@ -1,176 +1,213 @@
-from dymaxionlabs import files
-from dymaxionlabs.utils import get_api_url, get_api_key, get_project_id, raise_error
-
 import json
+import os
 import requests
 
+from .files import File
+from .utils import fetch_from_list_request, request
+
 DYM_PREDICT = '/estimators/{estimatorId}/predict/'
-DYM_PREDICTED = '/estimators/{estimatorId}/predicted/'
-DYM_PREDICTION_DETAIL = '/predictionjob/{predictionId}'
-DYM_PROJECT_DETAIL = '/projects/{projectId}'
-DYM_PROJECT_FILES = '/files/?limit=1000&project_uuid={projectId}'
-
-
-class PredictionJob:
-    """
-    Class that represents a PredictionJob in DymaxionLabs API
-
-    A PredictionJob is a background job that performs the prediction using a
-    previously trained Estimator and your uploaded images.
-    """
-    def __init__(self, id, estimator, finished, image_files, result_files):
-        """Constructor
-
-        Args:
-            id: PredictionJob id
-            estimator: related estimator instance
-            finished: PredictionJob's state
-            image_files: array of strings that contains the names of image to predict
-            results_files: array of strings that contains the names of results
-        """
-        self.id = id
-        self.estimator = estimator
-        self.finished = finished
-        self.image_files = image_files
-        self.results_files = result_files
-
-    def status(self):
-        """Get status of a PredictionJob
-
-        Returns:
-            Returns a boolean whether the job finished or not
-        """
-        if self.finished:
-            return self.finished
-        else:
-            headers = {
-                'Authorization': 'Api-Key {}'.format(get_api_key()),
-                'Accept-Language': 'es'
-            }
-            url = '{url}{path}'.format(
-                url=get_api_url(),
-                path=DYM_PREDICTION_DETAIL.format(predictionId=self.id))
-            r = requests.get(url, headers=headers)
-            if r.status_code == 200:
-                data = json.loads(r.text)
-                if data['finished']:
-                    self.finished = data['finished']
-                    self.results_files = data['result_files']
-                return data['finished']
-            else:
-                raise_error(r.status_code)
-
-    def download_results(self, output_dir="."):
-        """Download results from a finished PredictionJob
-
-        Args:
-            output_dir: path for storing results
-        """
-        if self.status():
-            for f in self.results_files:
-                files.download(f, output_dir)
 
 
 class Estimator:
     """
-    Class that represents an Estimator in DymaxionLabs API
+    The Estimator class represents a Model that can be trained to solve
+    different kinds of tasks, like object detection or classification.
+
     """
-    def __init__(self, uuid):
-        """Constructor
+
+    TYPES = dict(object_detection='OD')
+
+    base_path = '/estimators'
+
+    def __init__(self, *, uuid, name, classes, estimator_type, metadata,
+                 image_files, configuration, **extra_attributes):
+        """Estimator constructor
+
+        Usually created when using other classmethods: all(), get(), or create()
 
         Args:
-            uuid: Estiamtor uuid
-            prediction_job: related PredictionJob
+            uuid: internal id
+            name: name
+            classes: list of labels/classes
+            estimator_type: type of estimator (i.e. )
+            image_files: list of associated image files used for training
+            metadata: user metadata
+            configuration: estimator configuration
+            extra_attributes: extra attributes from API endpoint
         """
         self.uuid = uuid
+        self.name = name
+        self.classes = classes
+        self.estimator_type = estimator_type
+        self.metadata = metadata
+        self.image_files = image_files
+        self.configuration = configuration
+        self.extra_attributes = extra_attributes
+
+        self.training_job = None
         self.prediction_job = None
 
-    def predict_files(self, remote_files=[], local_files=[]):
+    @classmethod
+    def _from_attributes(cls, **attrs):
+        """Creates an Estimator class from an +attrs+ dictionary
+
+        This method also fetches related entities.
+
+        Used internally by other class methods
+        """
+        attrs['image_files'] = [
+            File(name=os.path.basename(path), path=path, metadata=None)
+            for path in attrs['image_files']
+        ]
+        return cls(**attrs)
+
+    @classmethod
+    def all(cls):
+        """Fetch all estimators"""
+        return [
+            cls._from_attributes(**attrs)
+            for attrs in fetch_from_list_request('{base_path}/'.format(
+                base_path=cls.base_path))
+        ]
+
+    @classmethod
+    def get(cls, uuid):
+        """Get estimator with +uuid+"""
+        attrs = request(
+            'get', '{base_path}/{uuid}'.format(base_path=cls.base_path,
+                                               uuid=uuid))
+        return cls._from_attributes(**attrs)
+
+    @classmethod
+    def create(cls,
+               *,
+               name,
+               type,
+               classes,
+               training_hours=None,
+               metadata=None,
+               configuration={}):
+        """Creates a new Estimator named +name+ of +type+ with +classes+ as labels
+            with +training_hours+ hour of training job
+
+        A metadata dictionary can be added via the +metadata+ parameter
+        A config dictionary con be added via the +configuration+ parameter
+        """
+        if type not in cls.TYPES:
+            raise TypeError("{} should be one of these: {}".format(
+                type, cls.TYPES.keys()))
+        if training_hours is not None:
+            configuration['training_hours'] = training_hours
+        body = dict(name=name,
+                    estimator_type=cls.TYPES[type],
+                    classes=classes,
+                    metadata=metadata,
+                    configuration=configuration)
+        response = request('post',
+                           '{base_path}/'.format(base_path=cls.base_path),
+                           body)
+        return cls._from_attributes(**response)
+
+    def save(self):
+        """Update estimator"""
+        body = dict(name=self.name,
+                    classes=self.classes,
+                    metadata=self.metadata,
+                    configuration=self.configuration)
+        response = request(
+            'patch', '{base_path}/{uuid}/'.format(base_path=self.base_path,
+                                                  uuid=self.uuid), body)
+        return self._from_attributes(**response)
+
+    def delete(self):
+        """Delete estimator"""
+        request(
+            'delete', '{base_path}/{uuid}'.format(base_path=self.base_path,
+                                                  uuid=self.uuid))
+        return True
+
+    def add_image(self, *images):
+        """Add an Image File to the estimator, for training"""
+        new_image_files = [
+            img.path for img in set(self.image_files + list(images))
+        ]
+        body = dict(image_files=new_image_files)
+        response = request(
+            'patch', '{base_path}/{uuid}/'.format(base_path=self.base_path,
+                                                  uuid=self.uuid), body)
+        self.image_files = list(set(self.image_files + list(images)))
+        return self
+
+    def add_labels_for(self, vector_file, image_file, label):
+        """
+        Add labels from an already uploaded +vector_file+ related to
+        +image_file+ and tags these labels like +label+
+        """
+        if label not in self.classes:
+            raise ValueError(
+                "Label '{}' is invalid. Must be one of: {}".format(
+                    label, self.classes))
+        body = dict(vector_file=vector_file.path,
+                    related_file=image_file.path,
+                    label=label)
+        response = request(
+            'post',
+            '{base_path}/{uuid}/load_labels'.format(base_path=self.base_path,
+                                                    uuid=self.uuid), body)
+        return self
+
+    def train(self):
+        from .tasks import Task
+        """Train
+
+        This function will start a training job over the current estimator.
+        I will create a model based on all the images from the estimator
+        and the associates annotations.
+
+        Returns:
+            Returns a dict with info about the new TrainingJob
+        """
+        response = request(
+            'post', '{base_path}/{uuid}/train'.format(base_path=self.base_path,
+                                                      uuid=self.uuid))
+        self.training_job = Task._from_attributes(response['detail'])
+        return self.training_job
+
+    def predict_files(self, file_folders, output_path, confidence=0.2):
+        from .tasks import Task
         """Predict files
 
-        This function will start a prediction job over the specified files.
-        You can predict over already upload images by providing a list of
-        +remote_files+, or over images in your disk by providing a list of
-        +local_files+.  Local files will be uploaded before prediction.
+        This function will start a prediction job over the specified +files+,
+        and it will store the result with the specified +confidence+ or grater
+        into +output_path+.
 
         Args:
-            remote_files: array of string with the names of already uploaded files
-            local_files: array of string with the names of local files
+            file_folders: array of folders with tiles to predict
+            output_path: results output path
+            confidence: confidence minimun value for prediction results
 
         Returns:
             Returns a dict with info about the new PredictionJob
         """
-        for local_file in local_files:
-            f = file.upload(local_file)
-            remote_files.append(f['name'])
+        if not file_folders:
+            raise RuntimeError("File folders is empty")
+        if not output_path:
+            raise RuntimeError("Output path can not be null")
+        if not (confidence >= 0.0 and confidence <= 1):
+            raise RuntimeError("Confidence's value has to be betwen 0.0 and 1")
+        path = '{base_path}/{uuid}/predict/'.format(base_path=self.base_path,
+                                                    uuid=self.uuid)
+        response = request('post',
+                           path,
+                           body={
+                               'files': file_folders,
+                               'output_path': output_path,
+                               'confidence': confidence,
+                           })
+        job_attrs = response['detail']
+        self.prediction_job = Task._from_attributes(job_attrs)
+        return self.prediction_job
 
-        data = {'files': remote_files}
-        headers = {
-            'Authorization': 'Api-Key {}'.format(get_api_key()),
-            'Accept-Language': 'es'
-        }
-        url = '{url}{path}'.format(
-            url=get_api_url(), path=DYM_PREDICT.format(estimatorId=self.uuid))
-        r = requests.post(url, json=data, headers=headers)
-        if r.status_code == 200:
-            data = json.loads(r.text)['detail']
-            self.prediction_job = PredictionJob(
-                id=data['id'],
-                estimator=data['estimator'],
-                finished=data['finished'],
-                image_files=data['image_files'],
-                result_files=data['result_files'])
-            return self.prediction_job
-        else:
-            raise_error(r.status_code)
-
-    @classmethod
-    def all(cls):
-        """Obtain all UUIDs of estimators from your project
-
-        Returns:
-            Returns an array of UUIDs
-        """
-        headers = {
-            'Authorization': 'Api-Key {}'.format(get_api_key()),
-            'Accept-Language': 'es'
-        }
-        url = '{url}{path}'.format(
-            url=get_api_url(),
-            path=DYM_PROJECT_DETAIL.format(projectId=get_project_id()))
-        r = requests.get(url, headers=headers)
-        if r.status_code == 200:
-            return json.loads(r.text)['estimators']
-        else:
-            raise_error(r.status_code)
-
-
-class Project:
-    def __init__(self):
-        """Constructor
-
-        Uses the environment variable to create the object
-        """
-        self.uuid = get_project_id()
-
-    def files(self):
-        """Obtain all info about the uploaded files from your project
-
-        Returns:
-            Returns a array of File objects
-        """
-        headers = {
-            'Authorization': 'Api-Key {}'.format(get_api_key()),
-            'Accept-Language': 'es'
-        }
-        url = '{url}{path}'.format(
-            url=get_api_url(),
-            path=DYM_PROJECT_FILES.format(projectId=self.uuid))
-        r = requests.get(url, headers=headers)
-        if r.status_code == 200:
-            res = []
-            for v in json.loads(r.text)['results']:
-                res.append(files.File(self, v['name'], v['metadata']))
-            return res
-        else:
-            raise_error(r.status_code)
+    def __repr__(self):
+        return "<Estimator uuid={uuid!r} name={name!r}>".format(name=self.name,
+                                                                uuid=self.uuid)

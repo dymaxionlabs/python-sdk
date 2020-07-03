@@ -1,4 +1,20 @@
+import json
 import os
+from urllib.parse import urlparse, urljoin
+
+import requests
+
+
+class BadRequestError(Exception):
+    pass
+
+
+class InternalServerError(Exception):
+    pass
+
+
+class NotFoundError(Exception):
+    pass
 
 
 def get_api_url():
@@ -11,16 +27,64 @@ def get_api_key():
     return os.environ.get("DYM_API_KEY")
 
 
-def get_project_id():
-    """Get current Project uuid from environment"""
-    return os.environ.get("DYM_PROJECT_ID")
-
-
-def raise_error(status_code):
-    """Returns an error message related to the status code"""
-    if status_code == 500:
-        raise Exception("Internal server error.")
-    elif status_code == 401:
-        raise Exception("Authentication error.")
+def request(method,
+            path,
+            body=None,
+            files=None,
+            params={},
+            headers={},
+            binary=False,
+            parse_response=True):
+    """Makes an HTTP request to the API"""
+    headers = {'Authorization': 'Api-Key {}'.format(get_api_key()), **headers}
+    request_method = getattr(requests, method)
+    url = urljoin(get_api_url(), path)
+    if files:
+        response = request_method(url,
+                                  files=files,
+                                  data=body,
+                                  params=params,
+                                  headers=headers)
     else:
-        raise Exception("Error {}".format(status_code))
+        if binary:
+            response = request_method(url,
+                                      data=body,
+                                      params=params,
+                                      headers=headers)
+        else:
+            response = request_method(url,
+                                      json=body,
+                                      params=params,
+                                      headers=headers)
+    code = response.status_code
+
+    # Error handling
+    if code == 404:
+        raise NotFoundError(response.text)
+    elif code in range(400, 500):
+        raise BadRequestError(response.text)
+    elif code in range(500, 600):
+        raise InternalServerError(response.text)
+
+    # If code is 204, return nothing
+    if code == 204:
+        return
+
+    # Otherwise, parse json response and return
+    if parse_response:
+        return json.loads(response.text)
+    else:
+        return response.content
+
+
+def fetch_from_list_request(path, params={}):
+    """Fetches all entities from a paginated result"""
+    res = []
+    response = request('get', path, params=params)
+    res.extend(response['results'])
+    if response['next']:
+        p = urlparse(response['next'])
+        new_path = '{}?{}#{}'.format(p.path, p.query, p.fragment)
+        next_items = fetch_from_list_request(path=new_path, params=params)
+        res.extend(next_items)
+    return res

@@ -35,18 +35,13 @@ Authentication
 Sign up at https://app.dymaxionlabs.com/signup if you don't have a user yet,
 otherwise log in.
 
-When entering the first time, you will be asked to create a new Project. After
-nameing your project you will enter the main dashboard.  Take note of your
-Project Id.
+Enter the API Key section, create a new API key and copy the generated key.
 
-Now enter the API Key section, create a new API key and copy the generated key.
-
-You need to set both keys as environment variables, like this:
+You need to set the API key using an environment variable, like this:
 
 .. code-block:: bash
 
   export DYM_API_KEY=...
-  export DYM_PROJECT_ID=...
 
 
 You can also do this from Python:
@@ -56,7 +51,6 @@ You can also do this from Python:
   import os
 
   os.environ["DYM_API_KEY"] = "insert-api-key"
-  os.environ["DYM_PROJECT_ID"] = "insert-project-id"
 
 
 From now on, you have full access to the Dymaxion Labs API from Python.
@@ -65,55 +59,86 @@ From now on, you have full access to the Dymaxion Labs API from Python.
 Examples
 ========
 
-To use your models for predicting, you have to know their UUID.
-
-You can obtain this by visiting the models page:
-https://app.dymaxionlabs.com/home/models.
-Click on the Edit button of your model, then on Show UUID menu option. Copy
-this and pass it as parameter to the ``Estimator`` constructor.
-
-You can predict objects in local images. For example, if you have ``img.jpg``:
+Suppose you want to detect pools in a residential area. First, you need to
+create an Estimator. In this case, you want an "object_detection" type of
+model, and there is only one class of object.
 
 .. code-block:: python
 
-    import time
-    from dymaxionlabs.models import Estimator
+  from dymaxionlabs.models import Estimator
 
-    model = Estimator('b4676699-27c8-4193-a24c-cffaf88cce92')
-
-    job = model.predict_files(local_files=['./img.jpg'])
-
-    # Wait for results
-    while not job.status():
-        print("Waiting for results...")
-        time.sleep(60)
-
-    # Download results to ./results directory (will be created if not exists)
-    job.download_results("./results")
+  pools_detector = Estimator.create(name="Pools detector",
+                                    type="object_detection",
+                                    classes=["pool"])
 
 
-or use previously uploaded files (*remote*)
+Now, you should upload the images you want to use for training, add them
+to your estimator, and create the tiles from the image.
 
 .. code-block:: python
 
-    import time
-    from dymaxionlabs.models import Estimator, Project
+  from dymaxionlabs.files import File
 
-    project = Project()
-    files = project.files()
-    first_file = files[0]
+  img = File.upload("pools-2020-02-01.tif", 'pools/images/')
+  pools_detector.add_image(img)
 
-    model = Estimator('b4676699-27c8-4193-a24c-cffaf88cce92')
+  tiling_job = img.tiling(output_path='pools/tiles/')
+  tiling_job.is_running()
+  #=> True
 
-    job = model.predict_files(remote_files=[first_file.name])
 
-    # Wait for results
-    while not job.status():
-        print("Waiting for seconds results...")
-        time.sleep(60)
+Next step is to upload your labels file (GeoJSON file) and add them to your
+estimator. The labels file must be a GeoJSON of polygons for a specific
+class. If you have more than one class, you hae to separate your labels in
+different files for each class.
 
-    # Download results to ./results directory (will be created if not exists)
-    job.download_results("./results")
+.. code-block:: python
+
+  labels = File.upload("labels.geojson", 'pools/labels/')
+  pools_detector.add_labels_for(labels, img, "pool")
+
+
+Now you are ready to train the model. Training might take a few hours to
+finish, so the train() method returns a TrainingJob instance, that represents
+the current training job.
+
+.. code-block:: python
+
+  job = pools_detector.train()
+
+  job.is_running()
+  #=> True
+
+
+When the job finishes, your model will be ready to be used for prediction.
+
+You should upload another image you want to predict, and again create
+the tiles from the image.
+
+.. code-block:: python
+
+  predict_img = File.upload("pools.tif", 'pools/predict-images/')
+  predict_tiles_folder = 'pools/predict-tiles/'
+  tiling_job = predict_img.tiling(output_path=predict_tiles_folder)
+  tiling_job.is_running()
+  #=> True
+
+And now you are able to predict in your estimator, the prediction job might take
+a few minutes.
+
+.. code-block:: python
+
+  pools_detector.predict_files([predict_tiles_folder], output_path='pools/predict-results/')
+  pools_detector.prediction_job.is_running()
+  #=> True
+
+
+You can download the results when the prediction job is finished.
+
+.. code-block:: python
+
+  for path in pools_detector.prediction_job.metadata["results_files"]:
+    File.get(path).download("results/")
 
 
 Contents
