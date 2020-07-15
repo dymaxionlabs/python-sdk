@@ -125,3 +125,62 @@ class EstimatorTest(unittest.TestCase):
             label=label)
         mock_request.assert_called_once_with('post', '/estimators/u1/load_labels', body)
         self.assertIs(type(est), Estimator)
+
+    @patch("dymaxionlabs.models.request")
+    def test_train(self, mock_request):
+        task_params = dict(
+            id='task1', 
+            name='task1', 
+            updated_at=None, 
+            created_at=None, 
+            finished_at=None, 
+            state=None,
+            metadata=None, 
+            args=None, 
+            kwargs=None
+        )
+        mock_request.return_value = {'detail':task_params}
+        est = Estimator(
+            uuid='u1',
+            name='n1',
+            classes='c1',
+            estimator_type='object_detection',
+            metadata='m1',
+            image_files=['f1', 'f2'],
+            configuration='conf1'
+        )
+        rv = est.train()
+        mock_request.assert_called_once_with('post', '/estimators/u1/train')
+        self.assertEqual(rv.id, 'task1')
+
+    @patch("dymaxionlabs.models.request")
+    def test_predict_files(self, mock_request):
+        task_params = dict(
+            id='task1', 
+            name='task1', 
+            updated_at=None, 
+            created_at=None, 
+            finished_at=None, 
+            state=None,
+            metadata=None, 
+            args=None, 
+            kwargs=None
+        )
+        mock_request.return_value = {'detail':task_params}
+        est = Estimator(
+            uuid='u1',
+            name='n1',
+            classes='c1',
+            estimator_type='object_detection',
+            metadata='m1',
+            image_files=['f1', 'f2'],
+            configuration='conf1'
+        )
+        rv = est.predict_files(file_folders='file_folders/', output_path='output_path/')
+        body = dict(
+            files='file_folders/',
+            output_path='output_path/',
+            confidence=0.2
+        )
+        mock_request.assert_called_once_with('post', '/estimators/u1/predict/', body=body)
+        self.assertEqual(rv.id, 'task1')
