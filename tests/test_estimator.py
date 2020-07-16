@@ -118,13 +118,16 @@ class EstimatorTest(unittest.TestCase):
         )
         vector_file = TestFile('t1')
         image_file = TestFile('i1')
+        label = 'wrong_label'
+        with self.assertRaises(ValueError):
+            est.add_labels_for(vector_file, image_file, label)
         label = 'c1'
         est.add_labels_for(vector_file, image_file, label)
         body = dict(vector_file=vector_file.path,
             related_file=image_file.path,
             label=label)
         mock_request.assert_called_once_with('post', '/estimators/u1/load_labels', body)
-        self.assertIs(type(est), Estimator)
+        self.assertIsInstance(est, Estimator)
 
     @patch("dymaxionlabs.models.request")
     def test_train(self, mock_request):
