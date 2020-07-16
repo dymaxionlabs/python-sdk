@@ -9,7 +9,25 @@ __author__ = "Dymaxion Labs"
 __copyright__ = "Dymaxion Labs"
 __license__ = "apache-2.0"
 
-class EstimatorTest(unittest.TestCase):
+class TestFile:
+    __test__ = False
+    path = ''
+
+    def __init__(self, path):
+        self.path = path
+
+class EstimatorTest(unittest.TestCase):        
+    
+    def setUp(self):        
+        self.est = Estimator(
+            uuid='u1',
+            name='n1',
+            classes='c1',
+            estimator_type='object_detection',
+            metadata='m1',
+            image_files=[TestFile('f1'), TestFile('f2')],
+            configuration='conf1'
+        )
 
     @patch("dymaxionlabs.utils.request")
     def test_all(self, mock_request):
@@ -48,15 +66,7 @@ class EstimatorTest(unittest.TestCase):
         mock_request.return_value = {'uuid':'u1', 'name':'n1', 'classes':'c1', 
             'estimator_type':'object_detection', 'metadata':'m1',
             'image_files':['f1','f2'], 'configuration':'conf1'}
-        rv = Estimator(
-            uuid='u1',
-            name='n1',
-            classes='c1',
-            estimator_type='object_detection',
-            metadata='m1',
-            image_files=['f1','f2'],
-            configuration='conf1'
-        ).save()
+        rv = self.est.save()
         body = {'name': 'n1', 'classes': 'c1', 'metadata': 'm1', 'configuration': 'conf1'}
         mock_request.assert_called_once_with('patch', '/estimators/u1/', body)
         self.assertEqual(rv.uuid, 'u1')
@@ -65,69 +75,37 @@ class EstimatorTest(unittest.TestCase):
     @patch("dymaxionlabs.models.request")
     def test_delete(self, mock_request):
         mock_request.return_value = True
-        rv = Estimator(
-            uuid='u1',
-            name='n1',
-            classes='c1',
-            estimator_type='object_detection',
-            metadata='m1',
-            image_files=['f1','f2'],
-            configuration='conf1'
-        ).delete()
+        rv = self.est.delete()
         mock_request.assert_called_once_with('delete', '/estimators/u1')
         self.assertTrue(rv)
 
     @patch("dymaxionlabs.models.request")
     def test_add_image(self, mock_request):
-        class TestFile:
-            path = ''
-
-            def __init__(self, path):
-                self.path = path
-
-        est = Estimator(
-            uuid='u1',
-            name='n1',
-            classes='c1',
-            estimator_type='object_detection',
-            metadata='m1',
-            image_files=[TestFile('f1'), TestFile('f2')],
-            configuration='conf1'
-        )
-        rv = est.add_image(TestFile('f3'))
-        body = dict(image_files=[img.path for img in est.image_files])
+        rv = self.est.add_image(TestFile('f3'))
+        body = dict(image_files=[img.path for img in self.est.image_files])
         mock_request.assert_called_once_with('patch', '/estimators/u1/', body)
-        self.assertIs(type(est), Estimator)
+        self.assertIs(type(self.est), Estimator)
 
     @patch("dymaxionlabs.models.request")
-    def test_add_labels_for(self, mock_request):
-        class TestFile:
-            path = ''
-
-            def __init__(self, path):
-                self.path = path
-
-        est = Estimator(
-            uuid='u1',
-            name='n1',
-            classes='c1',
-            estimator_type='object_detection',
-            metadata='m1',
-            image_files=[TestFile('f1'), TestFile('f2')],
-            configuration='conf1'
-        )
+    def test_add_wrong_label(self, mock_request):
         vector_file = TestFile('t1')
         image_file = TestFile('i1')
         label = 'wrong_label'
         with self.assertRaises(ValueError):
-            est.add_labels_for(vector_file, image_file, label)
+            self.est.add_labels_for(vector_file, image_file, label)
+        mock_request.assert_not_called()
+
+    @patch("dymaxionlabs.models.request")
+    def test_add_labels_for(self, mock_request):
+        vector_file = TestFile('t1')
+        image_file = TestFile('i1')
         label = 'c1'
-        est.add_labels_for(vector_file, image_file, label)
+        self.est.add_labels_for(vector_file, image_file, label)
         body = dict(vector_file=vector_file.path,
             related_file=image_file.path,
             label=label)
         mock_request.assert_called_once_with('post', '/estimators/u1/load_labels', body)
-        self.assertIsInstance(est, Estimator)
+        self.assertIsInstance(self.est, Estimator)
 
     @patch("dymaxionlabs.models.request")
     def test_train(self, mock_request):
@@ -143,16 +121,7 @@ class EstimatorTest(unittest.TestCase):
             kwargs=None
         )
         mock_request.return_value = {'detail':task_params}
-        est = Estimator(
-            uuid='u1',
-            name='n1',
-            classes='c1',
-            estimator_type='object_detection',
-            metadata='m1',
-            image_files=['f1', 'f2'],
-            configuration='conf1'
-        )
-        rv = est.train()
+        rv = self.est.train()
         mock_request.assert_called_once_with('post', '/estimators/u1/train')
         self.assertEqual(rv.id, 'task1')
 
@@ -170,16 +139,7 @@ class EstimatorTest(unittest.TestCase):
             kwargs=None
         )
         mock_request.return_value = {'detail':task_params}
-        est = Estimator(
-            uuid='u1',
-            name='n1',
-            classes='c1',
-            estimator_type='object_detection',
-            metadata='m1',
-            image_files=['f1', 'f2'],
-            configuration='conf1'
-        )
-        rv = est.predict_files(file_folders='file_folders/', output_path='output_path/')
+        rv = self.est.predict_files(file_folders='file_folders/', output_path='output_path/')
         body = dict(
             files='file_folders/',
             output_path='output_path/',
