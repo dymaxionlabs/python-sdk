@@ -39,7 +39,10 @@ class File:
         response = request(
             'get', '/storage/files/?path={path}'.format(
                 path=requests.utils.quote(path)))
-        return [File(**attrs) for attrs in response]
+        if response:
+            return [File(**attrs) for attrs in response]
+        else:
+            return []
 
     @classmethod
     def get(cls, path):
