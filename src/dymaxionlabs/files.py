@@ -1,13 +1,15 @@
-import mimetypes
 import io
+import mimetypes
 import os
+
 import requests
+from tqdm import tqdm
 
-from .utils import fetch_from_list_request, request
 from .upload import CustomResumableUpload
+from .utils import fetch_from_list_request, request
 
-MIN_SIZE_RESUMABLE_UPLOAD = 1024 * 1024  #1MB
-DEFAULT_CHUNK_SIZE = 1024 * 1024  #1MB
+MIN_SIZE_RESUMABLE_UPLOAD = 2**20  # 1MB
+DEFAULT_CHUNK_SIZE = 2**20  # 1MB
 
 
 class File:
@@ -69,8 +71,8 @@ class File:
     def _resumable_upload(cls, input_path, storage_path, chunk_size):
         chunk_size = DEFAULT_CHUNK_SIZE if chunk_size is None else DEFAULT_CHUNK_SIZE * chunk_size
         total_size = os.path.getsize(input_path)
-        f = open(input_path, "rb")
-        stream = io.BytesIO(f.read())
+        with open(input_path, "rb") as f:
+            stream = io.BytesIO(f.read())
         metadata = {u'name': os.path.basename(input_path)}
         res = cls._resumable_url(storage_path, os.path.getsize(input_path))
         upload = CustomResumableUpload(res['session_url'], chunk_size)
@@ -80,19 +82,17 @@ class File:
             mimetypes.MimeTypes().guess_type(input_path)[0],
             res['session_url'],
         )
-        print("Uploaded 0 %", end='\r', flush=True)
-        while (not upload.finished):
-            upload.transmit_next_chunk()
-            print("Uploaded {} %".format(
-                int(upload.bytes_uploaded * 100 / total_size)),
-                  end='\r',
-                  flush=True)
-        print("")
+        with tqdm(total=total_size,
+                  unit_scale=True,
+                  unit='B',
+                  unit_divisor=1024) as pbar:
+            while not upload.finished:
+                upload.transmit_next_chunk()
+                pbar.update(chunk_size)
         return cls.get(storage_path)
 
     @classmethod
     def _upload(cls, input_path, storage_path):
-        print("Uploaded 0 %", end='\r', flush=True)
         filename = os.path.basename(input_path)
         with open(input_path, 'rb') as fp:
             data = fp.read()
@@ -103,7 +103,6 @@ class File:
             body={'path': storage_path},
             files={'file': data},
         )
-        print("Uploaded 100 %")
         return File(**response['detail'])
 
     @classmethod
@@ -118,7 +117,6 @@ class File:
         Raises:
             FileNotFoundError: Path
         """
-        print("Uploading {}...".format(os.path.basename(input_path)))
         if storage_path.strip() == "" or list(storage_path).pop() == "/":
             storage_path = "".join(
                 [storage_path, os.path.basename(input_path)])
