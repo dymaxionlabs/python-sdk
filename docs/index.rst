@@ -22,7 +22,14 @@ Platform, you will need to create a Dymaxion Labs account.
 Install
 =======
 
-Install the latest client package via pip:
+The package is currently in beta, so we recommend to install it via pip from
+the GitHub repository:
+
+.. code-block:: bash
+
+    pip install git+https://github.com/dymaxionlabs/dymaxionlabs-python.git
+
+To install the latest stable version:
 
 .. code-block:: bash
 
@@ -32,7 +39,7 @@ Install the latest client package via pip:
 Authentication
 ==============
 
-Sign up at https://app.dymaxionlabs.com/signup if you don't have a user yet,
+Sign up at https://app.dymaxionlabs.com/signup if you do not have a user yet,
 otherwise log in.
 
 Enter the API Key section, create a new API key and copy the generated key.
@@ -60,7 +67,7 @@ Examples
 ========
 
 Suppose you want to detect pools in a residential area. First, you need to
-create an Estimator. In this case, you want an "object_detection" type of
+create an Estimator. In this case, you want an `"object_detection"` type of
 model, and there is only one class of object.
 
 .. code-block:: python
@@ -79,17 +86,19 @@ to your estimator, and create the tiles from the image.
 
   from dymaxionlabs.files import File
 
-  img = File.upload("pools-2020-02-01.tif", 'pools/images/')
+  img = File.upload("pools-2020-02-01.tif", "pools/images/")
   pools_detector.add_image(img)
 
-  tiling_job = img.tiling(output_path='pools/tiles/')
+  tiling_job = img.tiling(output_path="pools/tiles/")
   tiling_job.is_running()
   #=> True
 
+The tiling process generates tiles of 500x500 by default, but you can adjust
+the tile size with the `tile_size` parameter.
 
 Next step is to upload your labels file (GeoJSON file) and add them to your
 estimator. The labels file must be a GeoJSON of polygons for a specific
-class. If you have more than one class, you hae to separate your labels in
+class. If you have more than one class, you have to separate your labels in
 different files for each class.
 
 .. code-block:: python
@@ -99,8 +108,8 @@ different files for each class.
 
 
 Now you are ready to train the model. Training might take a few hours to
-finish, so the train() method returns a TrainingJob instance, that represents
-the current training job.
+finish, so the `train()` method returns a `TrainingJob` instance, that
+represents the current training job.
 
 .. code-block:: python
 
@@ -112,8 +121,8 @@ the current training job.
 
 When the job finishes, your model will be ready to be used for prediction.
 
-You should upload another image you want to predict, and again create
-the tiles from the image.
+You should upload another image you want to predict, and again create the
+tiles from the image.
 
 .. code-block:: python
 
@@ -123,8 +132,8 @@ the tiles from the image.
   tiling_job.is_running()
   #=> True
 
-And now you are able to predict in your estimator, the prediction job might take
-a few minutes.
+And now you are able to predict with your estimator. The prediction job might
+take a few minutes.
 
 .. code-block:: python
 
@@ -133,12 +142,12 @@ a few minutes.
   #=> True
 
 
-You can download the results when the prediction job is finished.
+You can download the results when the prediction job has completed.
 
 .. code-block:: python
 
   for path in pools_detector.prediction_job.metadata["results_files"]:
-    File.get(path).download("results/")
+      File.get(path).download("results/")
 
 
 Contents
