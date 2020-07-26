@@ -13,20 +13,21 @@ DEFAULT_CHUNK_SIZE = 2**20  # 1MB
 
 
 class File:
+    """
+    The File class represents files stored in Dymaxion Labs.
+
+    Files are owned by the authenticated user.
+
+    :param str name: file name
+    :param str path: file path in storage
+    :param dict metadata: file metadata
+    :param dict extra_attributes: extra attributes from API endpoint
+
+    """
+
     base_path = '/storage'
 
     def __init__(self, name, path, metadata, **extra_attributes):
-        """The File class represents files stored in Dymaxion Labs.
-
-        Files are owned by the authenticated user.
-
-        Args:
-            name: file name
-            path: file path
-            metadata: file metadata
-            extra_attributes: extra attributes from API endpoint
-
-        """
         self.name = name
         self.path = path
         self.metadata = metadata
@@ -35,7 +36,18 @@ class File:
 
     @classmethod
     def all(cls, path="*"):
-        """Get all File in +path+"""
+        """Fetches all files found in ``path``.
+
+        Glob patterns are allowed, to search recursively in directories::
+
+            File.all("foo/b*/images/*.tif")
+            #=> [<dymaxionlabs.file.File name="foo/bar/images/01.tif">, ...]
+
+        :param str path: path glob pattern
+        :returns: a list of :class:`File` of files found in path
+        :rtype: list
+
+        """
         response = request(
             'get', '/storage/files/?path={path}'.format(
                 path=requests.utils.quote(path)))
@@ -46,14 +58,24 @@ class File:
 
     @classmethod
     def get(cls, path):
-        """Get a specific File in +path+"""
+        """Gets a specific file in ``path``.
+
+        :param str path: file path
+        :rtype: File
+
+        """
         attrs = request(
             'get', '{base_path}/file/?path={path}'.format(
                 base_path=cls.base_path, path=requests.utils.quote(path)))
         return File(**attrs['detail'])
 
     def delete(self):
-        """Delete file"""
+        """Deletes the file in storage.
+
+        :returns: ``True`` if file was succesfully deleted
+        :rtype: bool
+
+        """
         request(
             'delete',
             '{base_path}/file/?path={path}'.format(base_path=self.base_path,
@@ -110,15 +132,15 @@ class File:
 
     @classmethod
     def upload(cls, input_path, storage_path="", chunk_size=None):
-        """Upload a file to storage
+        """Uploads a file to storage
 
-        Args:
-            input_path -- path to local file
-            storage_path -- destination path
-            chunk_size -- size [MB] of chunks for resumable uploading
+        :param str input_path: path of local file to upload
+        :param str storage_path: destination path in storage
+        :param int chunk_size: size (in MB) of chunks for resumable uploading
+        :raises: FileNotFoundError
+        :returns: uploaded file
+        :rtype: File
 
-        Raises:
-            FileNotFoundError: Path
         """
         if storage_path.strip() == "" or list(storage_path).pop() == "/":
             storage_path = "".join(
@@ -130,12 +152,12 @@ class File:
         return file
 
     def download(self, output_dir="."):
-        """Download file and save it to +output_dir+
+        """Downloads the file and stores it on ``output_dir``.
 
-        If +output_dir+ does not exist, it will be created.
+        If ``output_dir`` does not exist, it will be created.
 
-        Args:
-            output_dir: path to store file
+        :param str output_dir: directory path where file will be stored
+
         """
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
@@ -147,18 +169,20 @@ class File:
             f.write(content)
 
     def tiling(self, output_path, tile_size=500):
-        """Tiling
+        """Starts an image tiling job on the current file.
 
-        This function will start a tiling job over the specified file.
-        You can set the +tile_size+ that you want for the output tiles and
-        the +output_path+ for the path where the tiles will be storage
+        By default, tiles are 500x500, but you can set the ``tile_size`` to a
+        different size.
 
-        Args:
-            output_path: storage folder
-            tile_size: tile size
+        ``output_path`` should be a directory path in storage where tiles
+        will be generated.
 
-        Returns:
-            Returns a Task with info about the new tailing job
+        :param str output_path: tiles output directory
+        :param int tile_size: tile size (default: 500)
+        :returns: a Task with info about the new tiling job
+        :raises: RuntimeError if output path is None
+        :rtype: Task
+
         """
         if not output_path:
             raise RuntimeError("Output path can not be null")

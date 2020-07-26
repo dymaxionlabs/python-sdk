@@ -13,6 +13,18 @@ class Estimator:
     The Estimator class represents a Model that can be trained to solve
     different kinds of tasks, like object detection or classification.
 
+    To instance an Estimator, you should use one of the following class
+    methods: :meth:`all()`, :meth:`get()`, or :meth:`create()`.
+
+    :param str uuid: internal id
+    :param str name: name
+    :param list classes: list of labels/classes
+    :param str estimator_type: type of estimator (i.e. )
+    :param list image_files: list of associated image files used for training
+    :param dict metadata: user metadata
+    :param dict configuration: estimator configuration
+    :param dict extra_attributes: extra attributes from API endpoint
+
     """
 
     TYPES = dict(object_detection='OD')
@@ -21,20 +33,6 @@ class Estimator:
 
     def __init__(self, *, uuid, name, classes, estimator_type, metadata,
                  image_files, configuration, **extra_attributes):
-        """Estimator constructor
-
-        Usually created when using other classmethods: all(), get(), or create()
-
-        Args:
-            uuid: internal id
-            name: name
-            classes: list of labels/classes
-            estimator_type: type of estimator (i.e. )
-            image_files: list of associated image files used for training
-            metadata: user metadata
-            configuration: estimator configuration
-            extra_attributes: extra attributes from API endpoint
-        """
         self.uuid = uuid
         self.name = name
         self.classes = classes
@@ -49,7 +47,7 @@ class Estimator:
 
     @classmethod
     def _from_attributes(cls, **attrs):
-        """Creates an Estimator class from an +attrs+ dictionary
+        """Creates an ``Estimator`` class from an ``attrs`` dictionary.
 
         This method also fetches related entities.
 
@@ -63,7 +61,7 @@ class Estimator:
 
     @classmethod
     def all(cls):
-        """Fetch all estimators"""
+        """Fetches all estimators in the current project."""
         return [
             cls._from_attributes(**attrs)
             for attrs in fetch_from_list_request('{base_path}/'.format(
@@ -72,7 +70,7 @@ class Estimator:
 
     @classmethod
     def get(cls, uuid):
-        """Get estimator with +uuid+"""
+        """Gets an estimator identified by ``uuid``."""
         attrs = request(
             'get', '{base_path}/{uuid}'.format(base_path=cls.base_path,
                                                uuid=uuid))
@@ -87,11 +85,13 @@ class Estimator:
                training_hours=None,
                metadata=None,
                configuration={}):
-        """Creates a new Estimator named +name+ of +type+ with +classes+ as labels
-            with +training_hours+ hour of training job
+        """Creates a new Estimator named ``name`` of ``type`` with
+        ``classes`` as labels with ``training_hours`` hour of training job.
 
-        A metadata dictionary can be added via the +metadata+ parameter
-        A config dictionary con be added via the +configuration+ parameter
+        A metadata dictionary can be added via the ``metadata`` parameter. A
+        configuration dictionary can be added via the ``configuration``
+        parameter.
+
         """
         if type not in cls.TYPES:
             raise TypeError("{} should be one of these: {}".format(
@@ -109,7 +109,11 @@ class Estimator:
         return cls._from_attributes(**response)
 
     def save(self):
-        """Update estimator"""
+        """Updates the estimator.
+
+        :returns: itself
+
+        """
         body = dict(name=self.name,
                     classes=self.classes,
                     metadata=self.metadata,
@@ -120,14 +124,23 @@ class Estimator:
         return self._from_attributes(**response)
 
     def delete(self):
-        """Delete estimator"""
+        """Deletes the estimator.
+
+        :returns: ``True`` if estimator was succesfully deleted.
+
+        """
         request(
             'delete', '{base_path}/{uuid}'.format(base_path=self.base_path,
                                                   uuid=self.uuid))
         return True
 
     def add_image(self, *images):
-        """Add an Image File to the estimator, for training"""
+        """Adds an image :class:`File` to the estimator, for training.
+
+        :param images: one or multiple image :class:`File` instances
+        :returns: itself
+
+        """
         new_image_files = [
             img.path for img in set(self.image_files + list(images))
         ]
@@ -139,9 +152,14 @@ class Estimator:
         return self
 
     def add_labels_for(self, vector_file, image_file, label):
-        """
-        Add labels from an already uploaded +vector_file+ related to
-        +image_file+ and tags these labels like +label+
+        """Adds labels from an already uploaded ``vector_file`` related to
+        ``image_file`` and tags these labels like ``label``.
+
+        :param File vector_file: a GeoJSON file with polygons representing annotated objects
+        :param File image_file: the corresponding image file to be annotated.
+        :param str label: the class/label to use for the annotations
+        :returns: itself
+
         """
         if label not in self.classes:
             raise ValueError(
@@ -157,40 +175,38 @@ class Estimator:
         return self
 
     def train(self):
-        from .tasks import Task
-        """Train
+        """Start a training job using this estimator.
 
-        This function will start a training job over the current estimator.
-        I will create a model based on all the images from the estimator
-        and the associates annotations.
+        It will build a custom model based on all the images from the
+        estimator and the associates annotations.
 
-        Returns:
-            Returns a dict with info about the new TrainingJob
+        :returns: a dict with info about the new TrainingJob
+
         """
+        from .tasks import Task
+
         response = request(
             'post', '{base_path}/{uuid}/train'.format(base_path=self.base_path,
                                                       uuid=self.uuid))
         self.training_job = Task._from_attributes(response['detail'])
         return self.training_job
 
-    def predict_files(self, file_folders, output_path, confidence=0.2):
-        from .tasks import Task
-        """Predict files
+    def predict_files(self, tile_dirs, output_path=".", confidence=0.2):
+        """Starts a prediction job on the specified ``tile_dirs``, and stores
+        the results using ``confidence`` as a threshold, into
+        ``output_path``.
 
-        This function will start a prediction job over the specified +files+,
-        and it will store the result with the specified +confidence+ or grater
-        into +output_path+.
+        :param list tile_dirs: list of directories with tiles to predict
+        :param str output_path: results output path
+        :param float confidence: confidence value for results
 
-        Args:
-            file_folders: array of folders with tiles to predict
-            output_path: results output path
-            confidence: confidence minimun value for prediction results
+        :returns: a dict with info about the new :class:`PredictionJob`
 
-        Returns:
-            Returns a dict with info about the new PredictionJob
         """
-        if not file_folders:
-            raise RuntimeError("File folders is empty")
+        from .tasks import Task
+
+        if not tile_dirs:
+            raise RuntimeError("Tile directories is empty")
         if not output_path:
             raise RuntimeError("Output path can not be null")
         if not (confidence >= 0.0 and confidence <= 1):
@@ -200,7 +216,7 @@ class Estimator:
         response = request('post',
                            path,
                            body={
-                               'files': file_folders,
+                               'files': tile_dirs,
                                'output_path': output_path,
                                'confidence': confidence,
                            })
