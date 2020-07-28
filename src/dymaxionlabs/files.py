@@ -84,6 +84,13 @@ class File:
         return True
 
     @classmethod
+    def _check_completed_file(cls, path):
+        url_path = '{base_path}/check-completed-file/?path={path}'.format(
+            base_path=cls.base_path, path=requests.utils.quote(path))
+        response = request('post', url_path)
+        return response
+
+    @classmethod
     def _resumable_url(cls, storage_path, size):
         url_path = '{base_path}/create-resumable-upload/?path={path}&size={size}'.format(
             base_path=cls.base_path,
@@ -114,6 +121,7 @@ class File:
             while not upload.finished:
                 upload.transmit_next_chunk()
                 pbar.update(chunk_size)
+        cls._check_completed_file(storage_path)
         return cls.get(storage_path)
 
     @classmethod
