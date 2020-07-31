@@ -27,7 +27,7 @@ the GitHub repository:
 
 .. code-block:: bash
 
-    pip install git+https://github.com/dymaxionlabs/dymaxionlabs-python.git
+    pip install git+https://github.com/dymaxionlabs/python-sdk.git
 
 To install the latest stable version:
 
