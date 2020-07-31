@@ -1,8 +1,44 @@
+import http
 import json
 import os
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urljoin, urlparse
 
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+
+DEFAULT_TIMEOUT = 5  # seconds
+
+
+class TimeoutHTTPAdapter(HTTPAdapter):
+    def __init__(self, *args, **kwargs):
+        self.timeout = DEFAULT_TIMEOUT
+        if "timeout" in kwargs:
+            self.timeout = kwargs["timeout"]
+            del kwargs["timeout"]
+        super().__init__(*args, **kwargs)
+
+    def send(self, request, **kwargs):
+        timeout = kwargs.get("timeout")
+        if timeout is None:
+            kwargs["timeout"] = self.timeout
+        return super().send(request, **kwargs)
+
+
+# Set debug level
+#http.client.HTTPConnection.debuglevel = 1
+
+# Setup a Retry strategy, with exponential backoff
+retry_strategy = Retry(
+    total=3,
+    backoff_factor=1,
+    status_forcelist=[413, 429, 500, 502, 503, 504],
+    method_whitelist=["HEAD", "GET", "PUT", "DELETE", "OPTIONS", "TRACE"])
+adapter = TimeoutHTTPAdapter(max_retries=retry_strategy)
+session = requests.Session()
+
+session.mount("https://", adapter)
+session.mount("http://", adapter)
 
 
 class BadRequestError(Exception):
@@ -37,7 +73,7 @@ def request(method,
             parse_response=True):
     """Makes an HTTP request to the API"""
     headers = {'Authorization': 'Api-Key {}'.format(get_api_key()), **headers}
-    request_method = getattr(requests, method)
+    request_method = getattr(session, method)
     url = urljoin(get_api_url(), path)
     if files:
         response = request_method(url,
