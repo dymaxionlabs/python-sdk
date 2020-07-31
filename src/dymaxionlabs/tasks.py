@@ -25,7 +25,7 @@ class Task:
     base_path = "/tasks"
 
     def __init__(self, id, name, updated_at, created_at, finished_at, state,
-                 metadata, args, kwargs):
+                 duration, estimated_duration, metadata, args, kwargs):
         self.id = id
         self.name = name
         self.updated_at = updated_at
@@ -33,6 +33,8 @@ class Task:
         self.finished_at = finished_at
         self.state = state
         self.metadata = metadata
+        self.duration = duration
+        self.estimated_duration = estimated_duration
         self.args = args
         self.kwargs = kwargs
 
