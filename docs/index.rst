@@ -93,8 +93,15 @@ to your estimator, and create the tiles from the image.
   tiling_job.is_running()
   #=> True
 
+
 The tiling process generates tiles of 500x500 by default, but you can adjust
 the tile size with the `tile_size` parameter.
+
+.. code-block:: python
+
+  # Tile image in 250x250
+  tiling_job = img.tiling(output_path="pools/tiles/", tile_size=250)
+
 
 Next step is to upload your labels file (GeoJSON file) and add them to your
 estimator. The labels file must be a GeoJSON of polygons for a specific
@@ -114,15 +121,27 @@ represents the current training job.
 .. code-block:: python
 
   job = pools_detector.train()
-
   job.is_running()
   #=> True
 
 
+You can adjust a few parameters when training by updating the `configuration`
+dictionary:
+
+.. code-block:: python
+
+  job.configuration.update(epochs=25, steps=500)
+
+
+Currently there are two training parameters:
+
+* ``epochs``: Number of training epochs (default=15)
+* ``steps``: Number of steps per epoch (default=1000)
+
 When the job finishes, your model will be ready to be used for prediction.
 
-You should upload another image you want to predict, and again create the
-tiles from the image.
+Unless you want to predict over the same image you used for training, you
+should upload another image and again, create the tiles for that image.
 
 .. code-block:: python
 
@@ -132,8 +151,9 @@ tiles from the image.
   tiling_job.is_running()
   #=> True
 
-And now you are able to predict with your estimator. The prediction job might
-take a few minutes.
+
+You are now ready to start a prediction job.  This process might take a few
+minutes.
 
 .. code-block:: python
 
