@@ -156,6 +156,8 @@ class EstimatorTest(unittest.TestCase):
                            created_at=None,
                            finished_at=None,
                            state=None,
+                           duration=None,
+                           estimated_duration=10,
                            metadata=None,
                            args=None,
                            kwargs=None)
@@ -172,6 +174,8 @@ class EstimatorTest(unittest.TestCase):
                            created_at=None,
                            finished_at=None,
                            state=None,
+                           duration=None,
+                           estimated_duration=10,
                            metadata=None,
                            args=None,
                            kwargs=None)
