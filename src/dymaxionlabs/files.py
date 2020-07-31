@@ -6,7 +6,7 @@ import requests
 from tqdm import tqdm
 
 from .upload import CustomResumableUpload
-from .utils import fetch_from_list_request, request
+from .utils import fetch_from_list_request, request, NotFoundError
 
 MIN_SIZE_RESUMABLE_UPLOAD = 2**20  # 1MB
 DEFAULT_CHUNK_SIZE = 2**20  # 1MB
@@ -57,17 +57,24 @@ class File:
             return []
 
     @classmethod
-    def get(cls, path):
+    def get(cls, path, raise_error=True):
         """Gets a specific file in ``path``.
 
         :param str path: file path
+        :param bool raise_error: If False, do not raise NotFoundError if file not found
         :rtype: File
 
         """
-        attrs = request(
-            'get', '{base_path}/file/?path={path}'.format(
-                base_path=cls.base_path, path=requests.utils.quote(path)))
-        return File(**attrs['detail'])
+        attrs = None
+        try:
+            attrs = request(
+                'get', '{base_path}/file/?path={path}'.format(
+                    base_path=cls.base_path, path=requests.utils.quote(path)))
+            return File(**attrs['detail'])
+        except NotFoundError as err:
+            if not raise_error:
+                return
+            raise err
 
     def delete(self):
         """Deletes the file in storage.
