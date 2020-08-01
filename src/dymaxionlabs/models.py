@@ -1,11 +1,8 @@
 import json
 import os
-import requests
 
 from .files import File
 from .utils import fetch_from_list_request, request
-
-DYM_PREDICT = '/estimators/{estimatorId}/predict/'
 
 
 class Estimator:
@@ -64,16 +61,13 @@ class Estimator:
         """Fetches all estimators in the current project."""
         return [
             cls._from_attributes(**attrs)
-            for attrs in fetch_from_list_request('{base_path}/'.format(
-                base_path=cls.base_path))
+            for attrs in fetch_from_list_request(f'{cls.base_path}/')
         ]
 
     @classmethod
     def get(cls, uuid):
         """Gets an estimator identified by ``uuid``."""
-        attrs = request(
-            'get', '{base_path}/{uuid}'.format(base_path=cls.base_path,
-                                               uuid=uuid))
+        attrs = request('get', f'{cls.base_path}/{uuid}')
         return cls._from_attributes(**attrs)
 
     @classmethod
@@ -103,9 +97,7 @@ class Estimator:
                     classes=classes,
                     metadata=metadata,
                     configuration=configuration)
-        response = request('post',
-                           '{base_path}/'.format(base_path=cls.base_path),
-                           body)
+        response = request('post', f'{cls.base_path}/', body)
         return cls._from_attributes(**response)
 
     def save(self):
@@ -118,9 +110,7 @@ class Estimator:
                     classes=self.classes,
                     metadata=self.metadata,
                     configuration=self.configuration)
-        response = request(
-            'patch', '{base_path}/{uuid}/'.format(base_path=self.base_path,
-                                                  uuid=self.uuid), body)
+        response = request('patch', f'{self.base_path}/{self.uuid}/', body)
         return self._from_attributes(**response)
 
     def delete(self):
@@ -129,9 +119,7 @@ class Estimator:
         :returns: ``True`` if estimator was succesfully deleted.
 
         """
-        request(
-            'delete', '{base_path}/{uuid}'.format(base_path=self.base_path,
-                                                  uuid=self.uuid))
+        request('delete', f'{self.base_path}/{self.uuid}')
         return True
 
     def add_image(self, *images):
@@ -145,9 +133,7 @@ class Estimator:
             img.path for img in set(self.image_files + list(images))
         ]
         body = dict(image_files=new_image_files)
-        response = request(
-            'patch', '{base_path}/{uuid}/'.format(base_path=self.base_path,
-                                                  uuid=self.uuid), body)
+        request('patch', f'{self.base_path}/{self.uuid}/', body)
         self.image_files = list(set(self.image_files + list(images)))
         return self
 
@@ -168,10 +154,7 @@ class Estimator:
         body = dict(vector_file=vector_file.path,
                     related_file=image_file.path,
                     label=label)
-        response = request(
-            'post',
-            '{base_path}/{uuid}/load_labels'.format(base_path=self.base_path,
-                                                    uuid=self.uuid), body)
+        request('post', f'{self.base_path}/{self.uuid}/load_labels', body)
         return self
 
     def train(self):
@@ -185,9 +168,7 @@ class Estimator:
         """
         from .tasks import Task
 
-        response = request(
-            'post', '{base_path}/{uuid}/train'.format(base_path=self.base_path,
-                                                      uuid=self.uuid))
+        response = request('post', f'{self.base_path}/{self.uuid}/train')
         self.training_job = Task._from_attributes(response['detail'])
         return self.training_job
 
@@ -211,15 +192,12 @@ class Estimator:
             raise RuntimeError("Output path can not be null")
         if not (confidence >= 0.0 and confidence <= 1):
             raise RuntimeError("Confidence's value has to be betwen 0.0 and 1")
-        path = '{base_path}/{uuid}/predict/'.format(base_path=self.base_path,
-                                                    uuid=self.uuid)
+        body = dict(files=tile_dirs,
+                    output_path=output_path,
+                    confidence=confidence)
         response = request('post',
-                           path,
-                           body={
-                               'files': tile_dirs,
-                               'output_path': output_path,
-                               'confidence': confidence,
-                           })
+                           f'{self.base_path}/{self.uuid}/predict/',
+                           body=body)
         job_attrs = response['detail']
         self.prediction_job = Task._from_attributes(job_attrs)
         return self.prediction_job

@@ -2,7 +2,6 @@ import io
 import mimetypes
 import os
 
-import requests
 from tqdm import tqdm
 
 from .upload import CustomResumableUpload
@@ -35,7 +34,7 @@ class File:
         self.extra_attributes = extra_attributes
 
     @classmethod
-    def all(cls, path="*"):
+    def all(cls, path=""):
         """Fetches all files found in ``path``.
 
         Glob patterns are allowed, to search recursively in directories::
@@ -43,14 +42,14 @@ class File:
             File.all("foo/b*/images/*.tif")
             #=> [<dymaxionlabs.file.File name="foo/bar/images/01.tif">, ...]
 
-        :param str path: path glob pattern
+        :param str path: path glob pattern (default: "")
         :returns: a list of :class:`File` of files found in path
         :rtype: list
 
         """
-        response = request(
-            'get', '/storage/files/?path={path}'.format(
-                path=requests.utils.quote(path)))
+        response = request('get',
+                           f'{cls.base_path}/files/',
+                           params=dict(path=path))
         if response:
             return [File(**attrs) for attrs in response]
         else:
@@ -67,44 +66,26 @@ class File:
         """
         attrs = None
         try:
-            attrs = request(
-                'get', '{base_path}/file/?path={path}'.format(
-                    base_path=cls.base_path, path=requests.utils.quote(path)))
+            attrs = request('get',
+                            f'{cls.base_path}/file/',
+                            params=dict(path=path))
             return File(**attrs['detail'])
         except NotFoundError as err:
             if not raise_error:
                 return
             raise err
 
-    def delete(self):
-        """Deletes the file in storage.
-
-        :returns: ``True`` if file was succesfully deleted
-        :rtype: bool
-
-        """
-        request(
-            'delete',
-            '{base_path}/file/?path={path}'.format(base_path=self.base_path,
-                                                   path=requests.utils.quote(
-                                                       self.path)))
-        return True
-
     @classmethod
     def _check_completed_file(cls, path):
-        url_path = '{base_path}/check-completed-file/?path={path}'.format(
-            base_path=cls.base_path, path=requests.utils.quote(path))
-        response = request('post', url_path)
-        return response
+        return request('post',
+                       f'{cls.base_path}/check-completed-file/',
+                       params=dict(path=path))
 
     @classmethod
     def _resumable_url(cls, storage_path, size):
-        url_path = '{base_path}/create-resumable-upload/?path={path}&size={size}'.format(
-            base_path=cls.base_path,
-            path=requests.utils.quote(storage_path),
-            size=size)
-        response = request('post', url_path)
-        return response
+        return request('post',
+                       f'{cls.base_path}/create-resumable-upload/',
+                       params=dict(path=storage_path, size=size))
 
     @classmethod
     def _resumable_upload(cls, input_path, storage_path, chunk_size):
@@ -133,15 +114,13 @@ class File:
 
     @classmethod
     def _upload(cls, input_path, storage_path):
-        filename = os.path.basename(input_path)
         with open(input_path, 'rb') as fp:
             data = fp.read()
-        path = '{base_path}/upload/'.format(base_path=cls.base_path)
         response = request(
             'post',
-            path,
-            body={'path': storage_path},
-            files={'file': data},
+            f'{cls.base_path}/upload/',
+            body=dict(path=storage_path),
+            files=dict(file=data),
         )
         return File(**response['detail'])
 
@@ -166,6 +145,18 @@ class File:
             file = cls._upload(input_path, storage_path)
         return file
 
+    def delete(self):
+        """Deletes the file in storage.
+
+        :returns: ``True`` if file was succesfully deleted
+        :rtype: bool
+
+        """
+        request('delete',
+                f'{self.base_path}/file/',
+                params=dict(path=self.path))
+        return True
+
     def download(self, output_dir="."):
         """Downloads the file and stores it on ``output_dir``.
 
@@ -176,9 +167,11 @@ class File:
         """
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
-        path = '{base_path}/download/?path={path}'.format(
-            base_path=self.base_path, path=requests.utils.quote(self.path))
-        content = request('get', path, binary=True, parse_response=False)
+        content = request('get',
+                          f'{self.base_path}/download/',
+                          params=dict(path=self.path),
+                          binary=True,
+                          parse_response=False)
         output_file = os.path.join(output_dir, self.name)
         with open(output_file, 'wb') as f:
             f.write(content)
@@ -202,16 +195,12 @@ class File:
         if not output_path:
             raise RuntimeError("Output path can not be null")
         from .tasks import Task
-        response = request('post',
-                           '/estimators/start_tiling_job/',
-                           body={
-                               'path': self.path,
-                               'output_path': output_path,
-                               'tile_size': tile_size,
-                           })
+        body = dict(path=self.path,
+                    output_path=output_path,
+                    tile_size=tile_size)
+        response = request('post', '/estimators/start_tiling_job/', body=body)
         self.tiling_job = Task._from_attributes(response['detail'])
         return self.tiling_job
 
     def __repr__(self):
-        return "<dymaxionlabs.files.File path=\"{path}\">".format(
-            path=self.path)
+        return f"<dymaxionlabs.files.File path=\"{self.path}\">"

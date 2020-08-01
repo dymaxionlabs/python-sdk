@@ -70,8 +70,6 @@ class Task:
         :rtype: Task
 
         """
-        attrs = request(
-            'get', '{base_path}/{id}'.format(base_path=self.base_path,
-                                             id=self.id))
+        attrs = request('get', f'{self.base_path}/{self.id}')
         self.__dict__.update(self._from_attributes(attrs).__dict__)
         return self

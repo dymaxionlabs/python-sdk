@@ -29,8 +29,9 @@ class FileTest(unittest.TestCase):
         names = [f.name for f in rv]
         paths = [f.path for f in rv]
         # test URL *
-        mock_request.assert_called_once_with(
-            'get', '/storage/files/?path={path}'.format(path=quote('*')))
+        mock_request.assert_called_once_with('get',
+                                             '/storage/files/',
+                                             params=dict(path=''))
         # test received file names
         self.assertListEqual(names, ['foo', 'bar'])
         # test received file paths
@@ -46,8 +47,9 @@ class FileTest(unittest.TestCase):
             }
         }
         rv = File.get('/foo')
-        mock_request.assert_called_once_with(
-            'get', '/storage/file/?path={path}'.format(path=quote('/foo')))
+        mock_request.assert_called_once_with('get',
+                                             '/storage/file/',
+                                             params=dict(path='/foo'))
         self.assertEqual(rv.name, 'foo')
         self.assertEqual(rv.path, '/foo')
         self.assertEqual(rv.metadata, 'metadata_foo')
@@ -56,6 +58,7 @@ class FileTest(unittest.TestCase):
     def test_delete(self, mock_request):
         mock_request.return_value = True
         rv = File('foo', '/foo', 'metadata_foo').delete()
-        mock_request.assert_called_once_with(
-            'delete', '/storage/file/?path={path}'.format(path=quote('/foo')))
+        mock_request.assert_called_once_with('delete',
+                                             '/storage/file/',
+                                             params=dict(path='/foo'))
         self.assertTrue(rv)

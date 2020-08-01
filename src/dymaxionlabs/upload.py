@@ -15,13 +15,13 @@ RETRYABLE = (
 
 class CustomResumableUpload(ResumableUpload):
     def initiate(
-            self,
-            stream,
-            metadata,
-            content_type,
-            resumable_url,
-            total_bytes=None,
-            stream_final=True,
+        self,
+        stream,
+        metadata,
+        content_type,
+        resumable_url,
+        total_bytes=None,
+        stream_final=True,
     ):
         method, url, payload, headers = self._prepare_initiate_request(
             stream,
@@ -35,11 +35,11 @@ class CustomResumableUpload(ResumableUpload):
 
     @classmethod
     def _transmit_chunk_wait_and_retry(
-            cls,
-            url,
-            payload,
-            headers,
-            retry_strategy=_DEFAULT_RETRY_STRATEGY,
+        cls,
+        url,
+        payload,
+        headers,
+        retry_strategy=_DEFAULT_RETRY_STRATEGY,
     ):
         response = requests.put(
             url,
