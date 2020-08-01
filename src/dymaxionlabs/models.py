@@ -49,6 +49,10 @@ class Estimator:
         This method also fetches related entities.
 
         Used internally by other class methods
+
+        :params attrs dict: Estimator attributes
+        :rtype: Estimator
+
         """
         attrs['image_files'] = [
             File(name=os.path.basename(path), path=path, metadata=None)
@@ -169,7 +173,7 @@ class Estimator:
         from .tasks import Task
 
         response = request('post', f'{self.base_path}/{self.uuid}/train')
-        self.training_job = Task._from_attributes(response['detail'])
+        self.training_job = Task._from_attributes(**response['detail'])
         return self.training_job
 
     def predict_files(self, tile_dirs, output_path=".", confidence=0.2):
@@ -199,7 +203,7 @@ class Estimator:
                            f'{self.base_path}/{self.uuid}/predict/',
                            body=body)
         job_attrs = response['detail']
-        self.prediction_job = Task._from_attributes(job_attrs)
+        self.prediction_job = Task._from_attributes(**job_attrs)
         return self.prediction_job
 
     def __repr__(self):
