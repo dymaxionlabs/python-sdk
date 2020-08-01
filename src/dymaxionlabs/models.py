@@ -70,19 +70,17 @@ class Estimator:
 
     @classmethod
     def get(cls, uuid):
-        """Gets an estimator identified by ``uuid``."""
+        """Gets an estimator identified by ``uuid``.
+
+        :param uuid str: Estimator UUID
+        :rtype: Estimator
+
+        """
         attrs = request('get', f'{cls.base_path}/{uuid}')
         return cls._from_attributes(**attrs)
 
     @classmethod
-    def create(cls,
-               *,
-               name,
-               type,
-               classes,
-               training_hours=None,
-               metadata=None,
-               configuration={}):
+    def create(cls, *, name, type, classes, metadata=None, configuration={}):
         """Creates a new Estimator named ``name`` of ``type`` with
         ``classes`` as labels with ``training_hours`` hour of training job.
 
@@ -90,12 +88,17 @@ class Estimator:
         configuration dictionary can be added via the ``configuration``
         parameter.
 
+        :param name str: A name to identify the estimator
+        :param type str: Type of estimator ("object_detection")
+        :param classes list: List of classes/labels of objects
+        :param metadata dict: Optional metadata dictionary to store extra attributes
+        :param configuration dict: Optional configuration dictionary for training
+        :rtype: Estimator
+
         """
         if type not in cls.TYPES:
             raise TypeError("{} should be one of these: {}".format(
                 type, cls.TYPES.keys()))
-        if training_hours is not None:
-            configuration['training_hours'] = training_hours
         body = dict(name=name,
                     estimator_type=cls.TYPES[type],
                     classes=classes,

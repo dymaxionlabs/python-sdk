@@ -45,13 +45,12 @@ class Task:
 
     @classmethod
     def all(cls, path="*"):
-        """Fetches all Tasks
+        """Fetches all tasks.
 
         :returns: a list of :class:`Task`
         :rtype: list
 
         """
-        """Fetches all estimators in the current project."""
         return [
             cls._from_attributes(**attrs)
             for attrs in fetch_from_list_request(f'{cls.base_path}/')
@@ -59,7 +58,13 @@ class Task:
 
     @classmethod
     def get(cls, id):
-        """Gets an task identified by ``id``."""
+        """Gets an task identified by ``id``.
+
+        :param id int: Task id
+        :returns: the specified :class:`Task` instance
+        :rtype: Task
+
+        """
         attrs = request('get', f'{cls.base_path}/{id}')
         return cls._from_attributes(**attrs)
 
@@ -72,6 +77,7 @@ class Task:
         Used internally by other class methods.
 
         :param dict attrs: Task attributes
+        :rtype: Task
 
         """
         return cls(**attrs)
