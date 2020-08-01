@@ -199,7 +199,7 @@ class File:
                     output_path=output_path,
                     tile_size=tile_size)
         response = request('post', '/estimators/start_tiling_job/', body=body)
-        self.tiling_job = Task._from_attributes(response['detail'])
+        self.tiling_job = Task._from_attributes(**response['detail'])
         return self.tiling_job
 
     def __repr__(self):
