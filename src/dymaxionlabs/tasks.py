@@ -124,6 +124,8 @@ class Task:
         If ``output_dir`` does not exist, it will be created.
 
         :param str output_dir: directory path where file will be stored
+        :returns: path to the artifacts zip file
+        :rtype: str
 
         """
         os.makedirs(output_dir, exist_ok=True)
@@ -134,6 +136,7 @@ class Task:
         output_file = os.path.join(output_dir, f'artifacts_{self.id}.zip')
         with open(output_file, 'wb') as f:
             f.write(content)
+        return output_file
 
     def refresh(self):
         """Refreshes attributes of the task.
