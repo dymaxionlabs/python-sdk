@@ -89,8 +89,8 @@ to your estimator, and create the tiles from the image.
   img = File.upload("pools-2020-02-01.tif", "pools/images/")
   pools_detector.add_image(img)
 
-  tiling_job = img.tiling(output_path="pools/tiles/")
-  tiling_job.is_running()
+  tiling_task = img.tiling(output_path="pools/tiles/")
+  tiling_task.is_running()
   #=> True
 
 
@@ -100,7 +100,7 @@ the tile size with the `tile_size` parameter.
 .. code-block:: python
 
   # Tile image in 250x250
-  tiling_job = img.tiling(output_path="pools/tiles/", tile_size=250)
+  tiling_task = img.tiling(output_path="pools/tiles-250/", tile_size=250)
 
 
 Next step is to upload your labels file (GeoJSON file) and add them to your
@@ -115,13 +115,13 @@ different files for each class.
 
 
 Now you are ready to train the model. Training might take a few hours to
-finish, so the `train()` method returns a `TrainingJob` instance, that
-represents the current training job.
+finish, so the `train()` method returns a `Task` instance, that represents the
+current training task.
 
 .. code-block:: python
 
-  job = pools_detector.train()
-  job.is_running()
+  train_task = pools_detector.train()
+  train_task.is_running()
   #=> True
 
 
@@ -130,7 +130,10 @@ dictionary:
 
 .. code-block:: python
 
-  job.configuration.update(epochs=25, steps=500)
+  # Adjust configuration
+  pools_detector.configuration.update(epochs=25, steps=500)
+  # Re-train
+  train_task = pools_detector.train()
 
 
 Currently there are two training parameters:
@@ -138,7 +141,7 @@ Currently there are two training parameters:
 * ``epochs``: Number of training epochs (default=15)
 * ``steps``: Number of steps per epoch (default=1000)
 
-When the job finishes, your model will be ready to be used for prediction.
+When the task finishes, your model will be ready to be used for prediction.
 
 Unless you want to predict over the same image you used for training, you
 should upload another image and again, create the tiles for that image.
@@ -147,27 +150,32 @@ should upload another image and again, create the tiles for that image.
 
   predict_img = File.upload("pools.tif", 'pools/predict-images/')
   predict_tiles_folder = 'pools/predict-tiles/'
-  tiling_job = predict_img.tiling(output_path=predict_tiles_folder)
-  tiling_job.is_running()
+  tiling_task = predict_img.tiling(output_path=predict_tiles_folder)
+  tiling_task.is_running()
   #=> True
 
 
-You are now ready to start a prediction job.  This process might take a few
+You are now ready to start a prediction task.  This process might take a few
 minutes.
 
 .. code-block:: python
 
-  pools_detector.predict_files([predict_tiles_folder], output_path='pools/predict-results/')
-  pools_detector.prediction_job.is_running()
+  prediction_task = pools_detector.predict_files(
+        [predict_tiles_folder],
+        output_path='pools/predict-results/')
+  prediction_task.is_running()
   #=> True
 
 
-You can download the results when the prediction job has completed.
+You can download the results when the prediction task has completed.  The
+prediction task will generate the results as _output artifacts_, which you can
+download or export to your storage:
 
 .. code-block:: python
 
-  for path in pools_detector.prediction_job.metadata["results_files"]:
-      File.get(path).download("results/")
+  prediction_task.list_artifacts()
+  #=> ["pools.tif/results.csv", "pools.tif/results.geojson"]
+  prediction_task.download_artifacts("results/")
 
 
 Contents
