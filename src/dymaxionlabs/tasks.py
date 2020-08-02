@@ -1,6 +1,7 @@
 from .files import File
 from .models import Estimator
 from .utils import fetch_from_list_request, request
+import os
 
 
 class Task:
@@ -94,6 +95,45 @@ class Task:
             return False
         self.refresh()
         return self.state not in stopped_states
+
+    def has_artifacts(self):
+        """Checks if completed task has generated output artifacts.
+
+        :returns: True if it has output artifacts, False if not.
+        :rtype: bool
+
+        """
+        files = self.list_artifacts()
+        return len(files) > 0
+
+    def list_artifacts(self):
+        """Returns a list of the generated output artifacts.
+
+        :returns: list of file paths (strings)
+        :rtpe: list
+
+        """
+        response = request('get',
+                           f'{self.base_path}/{self.id}/list-artifacts/')
+        return response['files']
+
+    def download_artifacts(self, output_dir="."):
+        """Downloads output artifacts in a compressed Zip file,
+        and stores it on ``output_dir``.
+
+        If ``output_dir`` does not exist, it will be created.
+
+        :param str output_dir: directory path where file will be stored
+
+        """
+        os.makedirs(output_dir, exist_ok=True)
+        content = request('get',
+                          f'{self.base_path}/{self.id}/download-artifacts/',
+                          binary=True,
+                          parse_response=False)
+        output_file = os.path.join(output_dir, f'artifacts_{self.id}.zip')
+        with open(output_file, 'wb') as f:
+            f.write(content)
 
     def refresh(self):
         """Refreshes attributes of the task.
