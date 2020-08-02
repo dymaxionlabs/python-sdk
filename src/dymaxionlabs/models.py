@@ -179,13 +179,13 @@ class Estimator:
         self.training_job = Task._from_attributes(**response['detail'])
         return self.training_job
 
-    def predict_files(self, tile_dirs, output_path=".", confidence=0.2):
-        """Starts a prediction job on the specified ``tile_dirs``, and stores
-        the results using ``confidence`` as a threshold, into
-        ``output_path``.
+    def predict_files(self, tile_dirs, confidence=0.2):
+        """Starts a prediction job with the tile images stored in
+        ``tile_dirs``.
+
+        Results are filtered through a ``confidence`` threshold.
 
         :param list tile_dirs: list of directories with tiles to predict
-        :param str output_path: results output path
         :param float confidence: confidence value for results
 
         :returns: a dict with info about the new :class:`PredictionJob`
@@ -195,13 +195,9 @@ class Estimator:
 
         if not tile_dirs:
             raise RuntimeError("Tile directories is empty")
-        if not output_path:
-            raise RuntimeError("Output path can not be null")
         if not (confidence >= 0.0 and confidence <= 1):
             raise RuntimeError("Confidence's value has to be betwen 0.0 and 1")
-        body = dict(files=tile_dirs,
-                    output_path=output_path,
-                    confidence=confidence)
+        body = dict(files=tile_dirs, confidence=confidence)
         response = request('post',
                            f'{self.base_path}/{self.uuid}/predict/',
                            body=body)

@@ -180,10 +180,8 @@ class EstimatorTest(unittest.TestCase):
                            args=None,
                            kwargs=None)
         mock_request.return_value = {'detail': task_params}
-        rv = self.est.predict_files(tile_dirs='file_folders/',
-                                    output_path='output_path/')
+        rv = self.est.predict_files(tile_dirs='file_folders/')
         body = dict(files='file_folders/',
-                    output_path='output_path/',
                     confidence=0.2)
         mock_request.assert_called_once_with('post',
                                              '/estimators/u1/predict/',
