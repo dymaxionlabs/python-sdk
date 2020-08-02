@@ -57,5 +57,5 @@ class TasksTest(unittest.TestCase):
                                          args=None,
                                          kwargs=None)
         rv = self.task.refresh()
-        mock_request.assert_called_once_with('get', '/tasks/t1')
+        mock_request.assert_called_once_with('get', '/tasks/t1/')
         self.assertEqual(rv.state, "RUNNING")

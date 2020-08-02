@@ -76,7 +76,7 @@ class Estimator:
         :rtype: Estimator
 
         """
-        attrs = request('get', f'{cls.base_path}/{uuid}')
+        attrs = request('get', f'{cls.base_path}/{uuid}/')
         return cls._from_attributes(**attrs)
 
     @classmethod
@@ -126,7 +126,7 @@ class Estimator:
         :returns: ``True`` if estimator was succesfully deleted.
 
         """
-        request('delete', f'{self.base_path}/{self.uuid}')
+        request('delete', f'{self.base_path}/{self.uuid}/')
         return True
 
     def add_image(self, *images):
@@ -161,7 +161,7 @@ class Estimator:
         body = dict(vector_file=vector_file.path,
                     related_file=image_file.path,
                     label=label)
-        request('post', f'{self.base_path}/{self.uuid}/load_labels', body)
+        request('post', f'{self.base_path}/{self.uuid}/load_labels/', body)
         return self
 
     def train(self):
@@ -175,7 +175,7 @@ class Estimator:
         """
         from .tasks import Task
 
-        response = request('post', f'{self.base_path}/{self.uuid}/train')
+        response = request('post', f'{self.base_path}/{self.uuid}/train/')
         self.training_job = Task._from_attributes(**response['detail'])
         return self.training_job
 
