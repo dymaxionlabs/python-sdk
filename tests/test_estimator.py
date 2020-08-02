@@ -62,7 +62,7 @@ class EstimatorTest(unittest.TestCase):
             'configuration': 'conf1'
         }
         rv = Estimator.get('u1')
-        mock_request.assert_called_once_with('get', '/estimators/u1')
+        mock_request.assert_called_once_with('get', '/estimators/u1/')
         self.assertEqual(rv.uuid, 'u1')
         self.assertEqual(rv.name, 'n1')
 
@@ -115,7 +115,7 @@ class EstimatorTest(unittest.TestCase):
     def test_delete(self, mock_request):
         mock_request.return_value = True
         rv = self.est.delete()
-        mock_request.assert_called_once_with('delete', '/estimators/u1')
+        mock_request.assert_called_once_with('delete', '/estimators/u1/')
         self.assertTrue(rv)
 
     @patch("dymaxionlabs.models.request")
@@ -144,7 +144,7 @@ class EstimatorTest(unittest.TestCase):
                     related_file=image_file.path,
                     label=label)
         mock_request.assert_called_once_with('post',
-                                             '/estimators/u1/load_labels',
+                                             '/estimators/u1/load_labels/',
                                              body)
         self.assertIsInstance(self.est, Estimator)
 
@@ -163,7 +163,7 @@ class EstimatorTest(unittest.TestCase):
                            kwargs=None)
         mock_request.return_value = {'detail': task_params}
         rv = self.est.train()
-        mock_request.assert_called_once_with('post', '/estimators/u1/train')
+        mock_request.assert_called_once_with('post', '/estimators/u1/train/')
         self.assertEqual(rv.id, 'task1')
 
     @patch("dymaxionlabs.models.request")
