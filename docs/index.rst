@@ -63,7 +63,7 @@ You can also do this from Python:
 From now on, you have full access to the Dymaxion Labs API from Python.
 
 
-Examples
+Tutorial
 ========
 
 Suppose you want to detect pools in a residential area. First, you need to
@@ -160,9 +160,7 @@ minutes.
 
 .. code-block:: python
 
-  prediction_task = pools_detector.predict_files(
-        [predict_tiles_folder],
-        output_path='pools/predict-results/')
+  prediction_task = pools_detector.predict_files([predict_tiles_folder])
   prediction_task.is_running()
   #=> True
 
