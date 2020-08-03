@@ -28,8 +28,18 @@ class Estimator:
 
     base_path = '/estimators'
 
-    def __init__(self, *, uuid, name, classes, estimator_type, metadata,
-                 image_files, configuration, **extra_attributes):
+    def __init__(self,
+                 *,
+                 uuid,
+                 name,
+                 classes,
+                 estimator_type,
+                 metadata,
+                 image_files,
+                 configuration,
+                 training_jobs=[],
+                 prediction_jobs=[],
+                 **extra_attributes):
         self.uuid = uuid
         self.name = name
         self.classes = classes
@@ -37,6 +47,8 @@ class Estimator:
         self.metadata = metadata
         self.image_files = image_files
         self.configuration = configuration
+        self.training_jobs = training_jobs
+        self.prediction_jobs = prediction_jobs
         self.extra_attributes = extra_attributes
 
         self.training_job = None
@@ -54,9 +66,17 @@ class Estimator:
         :rtype: Estimator
 
         """
+        from .tasks import Task
+
         attrs['image_files'] = [
             File(name=os.path.basename(path), path=path, metadata=None)
             for path in attrs['image_files']
+        ]
+        attrs['training_jobs'] = [
+            Task._from_attributes(**task) for task in attrs['training_jobs']
+        ]
+        attrs['prediction_jobs'] = [
+            Task._from_attributes(**task) for task in attrs['prediction_jobs']
         ]
         return cls(**attrs)
 
