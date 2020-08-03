@@ -53,19 +53,19 @@ class Estimator:
 
     @property
     def latest_training_task(self):
-        """Get the last training task.
+        """Returns the most recent training task.
 
-        :returns: a Task object with info about the last Trainnig Task
-
+        :returns: a Task instance with information about the latest training task
+        :rtype: Task
         """
         return self.training_tasks[0] if len(self.training_tasks) > 0 else None
 
     @property
     def latest_prediction_task(self):
-        """Get the last prediction task.
+        """Returns the most recent prediction task.
 
-        :returns: a Task object with info about the last Prediction Task
-
+        :returns: a Task instance with information about the latest prediction task
+        :rtype: Task
         """
         return self.prediction_tasks[0] if len(
             self.prediction_tasks) > 0 else None
