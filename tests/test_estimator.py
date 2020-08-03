@@ -40,6 +40,8 @@ class EstimatorTest(unittest.TestCase):
                 'estimator_type': 't1',
                 'metadata': 'm1',
                 'image_files': ['f1', 'f2'],
+                'prediction_tasks': [],
+                'training_tasks': [],
                 'configuration': 'conf1'
             }],
             'next':
@@ -59,6 +61,8 @@ class EstimatorTest(unittest.TestCase):
             'estimator_type': 't1',
             'metadata': 'm1',
             'image_files': ['f1', 'f2'],
+            'prediction_tasks': [],
+            'training_tasks': [],
             'configuration': 'conf1'
         }
         rv = Estimator.get('u1')
@@ -75,6 +79,8 @@ class EstimatorTest(unittest.TestCase):
             'estimator_type': 'object_detection',
             'metadata': 'm1',
             'image_files': ['f1', 'f2'],
+            'prediction_tasks': [],
+            'training_tasks': [],
             'configuration': 'conf1'
         }
         rv = Estimator.create(name='u1', type='object_detection', classes='c1')
@@ -98,6 +104,8 @@ class EstimatorTest(unittest.TestCase):
             'estimator_type': 'object_detection',
             'metadata': 'm1',
             'image_files': ['f1', 'f2'],
+            'prediction_tasks': [],
+            'training_tasks': [],
             'configuration': 'conf1'
         }
         rv = self.est.save()
@@ -181,8 +189,7 @@ class EstimatorTest(unittest.TestCase):
                            kwargs=None)
         mock_request.return_value = {'detail': task_params}
         rv = self.est.predict_files(tile_dirs='file_folders/')
-        body = dict(files='file_folders/',
-                    confidence=0.2)
+        body = dict(files='file_folders/', confidence=0.2)
         mock_request.assert_called_once_with('post',
                                              '/estimators/u1/predict/',
                                              body=body)

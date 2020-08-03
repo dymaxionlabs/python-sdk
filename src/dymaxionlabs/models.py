@@ -28,8 +28,18 @@ class Estimator:
 
     base_path = '/estimators'
 
-    def __init__(self, *, uuid, name, classes, estimator_type, metadata,
-                 image_files, configuration, **extra_attributes):
+    def __init__(self,
+                 *,
+                 uuid,
+                 name,
+                 classes,
+                 estimator_type,
+                 metadata,
+                 image_files,
+                 configuration,
+                 training_tasks=[],
+                 prediction_tasks=[],
+                 **extra_attributes):
         self.uuid = uuid
         self.name = name
         self.classes = classes
@@ -37,10 +47,28 @@ class Estimator:
         self.metadata = metadata
         self.image_files = image_files
         self.configuration = configuration
+        self.training_tasks = training_tasks
+        self.prediction_tasks = prediction_tasks
         self.extra_attributes = extra_attributes
 
-        self.training_job = None
-        self.prediction_job = None
+    @property
+    def latest_training_task(self):
+        """Returns the most recent training task.
+
+        :returns: a Task instance with information about the latest training task
+        :rtype: Task
+        """
+        return self.training_tasks[0] if len(self.training_tasks) > 0 else None
+
+    @property
+    def latest_prediction_task(self):
+        """Returns the most recent prediction task.
+
+        :returns: a Task instance with information about the latest prediction task
+        :rtype: Task
+        """
+        return self.prediction_tasks[0] if len(
+            self.prediction_tasks) > 0 else None
 
     @classmethod
     def _from_attributes(cls, **attrs):
@@ -54,9 +82,17 @@ class Estimator:
         :rtype: Estimator
 
         """
+        from .tasks import Task
+
         attrs['image_files'] = [
             File(name=os.path.basename(path), path=path, metadata=None)
             for path in attrs['image_files']
+        ]
+        attrs['training_tasks'] = [
+            Task._from_attributes(**task) for task in attrs['training_tasks']
+        ]
+        attrs['prediction_tasks'] = [
+            Task._from_attributes(**task) for task in attrs['prediction_tasks']
         ]
         return cls(**attrs)
 
@@ -176,8 +212,9 @@ class Estimator:
         from .tasks import Task
 
         response = request('post', f'{self.base_path}/{self.uuid}/train/')
-        self.training_job = Task._from_attributes(**response['detail'])
-        return self.training_job
+        task = Task._from_attributes(**response['detail'])
+        self.training_tasks.insert(0, task)
+        return task
 
     def predict_files(self, tile_dirs, confidence=0.2):
         """Starts a prediction job with the tile images stored in
@@ -202,8 +239,9 @@ class Estimator:
                            f'{self.base_path}/{self.uuid}/predict/',
                            body=body)
         job_attrs = response['detail']
-        self.prediction_job = Task._from_attributes(**job_attrs)
-        return self.prediction_job
+        task = Task._from_attributes(**job_attrs)
+        self.prediction_tasks.insert(0, task)
+        return task
 
     def __repr__(self):
         return "<Estimator uuid={uuid!r} name={name!r}>".format(name=self.name,
