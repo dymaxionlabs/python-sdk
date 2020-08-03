@@ -37,8 +37,8 @@ class Estimator:
                  metadata,
                  image_files,
                  configuration,
-                 training_jobs=[],
-                 prediction_jobs=[],
+                 training_tasks=[],
+                 prediction_tasks=[],
                  **extra_attributes):
         self.uuid = uuid
         self.name = name
@@ -47,8 +47,8 @@ class Estimator:
         self.metadata = metadata
         self.image_files = image_files
         self.configuration = configuration
-        self.training_jobs = training_jobs
-        self.prediction_jobs = prediction_jobs
+        self.training_tasks = training_tasks
+        self.prediction_tasks = prediction_tasks
         self.extra_attributes = extra_attributes
 
         self.training_job = None
@@ -72,11 +72,11 @@ class Estimator:
             File(name=os.path.basename(path), path=path, metadata=None)
             for path in attrs['image_files']
         ]
-        attrs['training_jobs'] = [
-            Task._from_attributes(**task) for task in attrs['training_jobs']
+        attrs['training_tasks'] = [
+            Task._from_attributes(**task) for task in attrs['training_tasks']
         ]
-        attrs['prediction_jobs'] = [
-            Task._from_attributes(**task) for task in attrs['prediction_jobs']
+        attrs['prediction_tasks'] = [
+            Task._from_attributes(**task) for task in attrs['prediction_tasks']
         ]
         return cls(**attrs)
 
