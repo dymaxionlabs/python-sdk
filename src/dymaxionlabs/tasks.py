@@ -138,6 +138,18 @@ class Task:
             f.write(content)
         return output_file
 
+    def export_artifacts(self, storage_dir):
+        """Stores output artifacts in ``storage_dir``.
+
+        :param str storage_dir: directory path where file will be stored
+        """
+        if not storage_dir:
+            raise RuntimeError("``storage_dir`` directories can not be null")
+        response = request('post',
+                           f'{self.base_path}/{self.id}/export-artifacts/',
+                           body=dict(path=storage_dir))
+        return response
+
     def refresh(self):
         """Refreshes attributes of the task.
 
