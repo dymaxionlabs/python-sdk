@@ -167,7 +167,7 @@ class Task:
         :returns: itself
         :rtype: Task
         """
-        response = request('post', f'{cls.base_path}/{self.id}/cancel/')
+        response = request('post', f'{self.base_path}/{self.id}/cancel/')
         return self.refresh()
 
     def __repr__(self):
