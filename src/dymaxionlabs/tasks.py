@@ -161,6 +161,15 @@ class Task:
         self.__dict__.update(self._from_attributes(**attrs).__dict__)
         return self
 
+    def cancel(self):
+        """Cancel the task if it is possible.
+
+        :returns: itself
+        :rtype: Task
+        """
+        response = request('post', f'{cls.base_path}/{self.id}/cancel/')
+        return self.refresh()
+
     def __repr__(self):
         return (f"<dymaxionlabs.tasks.Task id={self.id} "
                 f"name=\"{self.name}\" "
