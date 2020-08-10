@@ -243,6 +243,15 @@ class Estimator:
         self.prediction_tasks.insert(0, task)
         return task
 
+    def clone(self):
+        """Clone an estimator.
+
+        :rtype: Estimator
+        """
+        attrs = request('post', f'{self.base_path}/{self.uuid}/clone/')
+        print(attrs)
+        return self._from_attributes(**attrs)
+
     def __repr__(self):
         return "<Estimator uuid={uuid!r} name={name!r}>".format(name=self.name,
                                                                 uuid=self.uuid)
