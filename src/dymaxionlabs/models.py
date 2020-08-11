@@ -249,7 +249,6 @@ class Estimator:
         :rtype: Estimator
         """
         attrs = request('post', f'{self.base_path}/{self.uuid}/clone/')
-        print(attrs)
         return self._from_attributes(**attrs)
 
     def __repr__(self):
