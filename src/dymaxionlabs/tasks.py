@@ -23,6 +23,7 @@ class Task:
     :param dict metadata: job metadata
     :param int duration: duration (in seconds)
     :param int estimated_duration: estimated duration (in seconds)
+    :param str error: latest error message (if task failed)
     :param dict extra_attributes: extra attributes from API response
 
     """
@@ -31,7 +32,7 @@ class Task:
 
     def __init__(self, *, id, state, name, args, kwargs, created_at,
                  updated_at, finished_at, metadata, duration,
-                 estimated_duration, **extra_attributes):
+                 estimated_duration, error, **extra_attributes):
         self.id = id
         self.state = state
         self.name = name
@@ -43,6 +44,7 @@ class Task:
         self.metadata = metadata
         self.duration = duration
         self.estimated_duration = estimated_duration
+        self.error = error
 
     @classmethod
     def all(cls, path="*"):
