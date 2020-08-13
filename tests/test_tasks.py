@@ -22,6 +22,7 @@ class TasksTest(unittest.TestCase):
                          duration=None,
                          estimated_duration=10,
                          metadata=None,
+                         error=None,
                          args=None,
                          kwargs=None)
 
@@ -54,6 +55,7 @@ class TasksTest(unittest.TestCase):
                                          duration=None,
                                          estimated_duration=10,
                                          metadata=None,
+                                         error=None,
                                          args=None,
                                          kwargs=None)
         rv = self.task.refresh()

@@ -167,6 +167,7 @@ class EstimatorTest(unittest.TestCase):
                            duration=None,
                            estimated_duration=10,
                            metadata=None,
+                           error=None,
                            args=None,
                            kwargs=None)
         mock_request.return_value = {'detail': task_params}
@@ -185,6 +186,7 @@ class EstimatorTest(unittest.TestCase):
                            duration=None,
                            estimated_duration=10,
                            metadata=None,
+                           error=None,
                            args=None,
                            kwargs=None)
         mock_request.return_value = {'detail': task_params}
