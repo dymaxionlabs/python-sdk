@@ -251,6 +251,15 @@ class Estimator:
         attrs = request('post', f'{self.base_path}/{self.uuid}/clone/')
         return self._from_attributes(**attrs)
 
+    def describe_annotations(self):
+        """Describe annotations.
+
+        :rtype: dict
+        """
+        data = request('get',
+                       f'{self.base_path}/{self.uuid}/describe_annotations/')
+        return data
+
     def __repr__(self):
         return "<Estimator uuid={uuid!r} name={name!r}>".format(name=self.name,
                                                                 uuid=self.uuid)
