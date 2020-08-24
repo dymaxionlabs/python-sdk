@@ -116,7 +116,8 @@ class Estimator:
         return cls._from_attributes(**attrs)
 
     @classmethod
-    def create(cls, *, name, type, classes, metadata=None, configuration={}):
+    def create(cls, *, name, type, classes=[], metadata=None,
+               configuration={}):
         """Creates a new Estimator named ``name`` of ``type`` with
         ``classes`` as labels with ``training_hours`` hour of training job.
 
@@ -126,7 +127,7 @@ class Estimator:
 
         :param name str: A name to identify the estimator
         :param type str: Type of estimator ("object_detection")
-        :param classes list: List of classes/labels of objects
+        :param classes list: Optional list of classes/labels of objects
         :param metadata dict: Optional metadata dictionary to store extra attributes
         :param configuration dict: Optional configuration dictionary for training
         :rtype: Estimator
@@ -180,23 +181,28 @@ class Estimator:
         self.image_files = list(set(self.image_files + list(images)))
         return self
 
-    def add_labels_for(self, vector_file, image_file, label):
+    def add_labels_for(self,
+                       vector_file,
+                       image_file,
+                       label=None,
+                       label_property=None):
         """Adds labels from an already uploaded ``vector_file`` related to
-        ``image_file`` and tags these labels like ``label``.
+        ``image_file`` and tags these labels like ``label`` or with the value of ``label_property``.
 
         :param File vector_file: a GeoJSON file with polygons representing annotated objects
         :param File image_file: the corresponding image file to be annotated.
         :param str label: the class/label to use for the annotations
+        :param str label_property: the property that stores the label value of each annotation
         :returns: itself
 
         """
-        if label not in self.classes:
+        if not label and not label_property:
             raise ValueError(
-                "Label '{}' is invalid. Must be one of: {}".format(
-                    label, self.classes))
+                "Class and class_property cannot be null simultaneously")
         body = dict(vector_file=vector_file.path,
                     related_file=image_file.path,
-                    label=label)
+                    label=label,
+                    label_property=label_property)
         request('post', f'{self.base_path}/{self.uuid}/load_labels/', body)
         return self
 
