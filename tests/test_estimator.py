@@ -141,7 +141,8 @@ class EstimatorTest(unittest.TestCase):
         self.est.add_labels_for(vector_file, image_file, label)
         body = dict(vector_file=vector_file.path,
                     related_file=image_file.path,
-                    label=label)
+                    label=label,
+                    label_property=None)
         mock_request.assert_called_once_with('post',
                                              '/estimators/u1/load_labels/',
                                              body)
