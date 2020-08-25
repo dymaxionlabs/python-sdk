@@ -24,7 +24,7 @@ class Estimator:
 
     """
 
-    TYPES = dict(object_detection='OD')
+    TYPES = dict(object_detection='OD', segmentation='SG')
 
     base_path = '/estimators'
 
