@@ -134,15 +134,6 @@ class EstimatorTest(unittest.TestCase):
         self.assertIs(type(self.est), Estimator)
 
     @patch("dymaxionlabs.models.request")
-    def test_add_wrong_label(self, mock_request):
-        vector_file = TestFile('t1')
-        image_file = TestFile('i1')
-        label = 'wrong_label'
-        with self.assertRaises(ValueError):
-            self.est.add_labels_for(vector_file, image_file, label)
-        mock_request.assert_not_called()
-
-    @patch("dymaxionlabs.models.request")
     def test_add_labels_for(self, mock_request):
         vector_file = TestFile('t1')
         image_file = TestFile('i1')
@@ -150,7 +141,8 @@ class EstimatorTest(unittest.TestCase):
         self.est.add_labels_for(vector_file, image_file, label)
         body = dict(vector_file=vector_file.path,
                     related_file=image_file.path,
-                    label=label)
+                    label=label,
+                    label_property=None)
         mock_request.assert_called_once_with('post',
                                              '/estimators/u1/load_labels/',
                                              body)
