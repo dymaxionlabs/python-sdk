@@ -198,7 +198,7 @@ class Estimator:
         """
         if not label and not label_property:
             raise ValueError(
-                "Class and class_property cannot be null simultaneously")
+                "Label and label_property cannot be null simultaneously")
         body = dict(vector_file=vector_file.path,
                     related_file=image_file.path,
                     label=label,
