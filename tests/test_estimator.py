@@ -135,10 +135,23 @@ class EstimatorTest(unittest.TestCase):
 
     @patch("dymaxionlabs.models.request")
     def test_add_labels_for(self, mock_request):
+        task_params = dict(id='task1',
+                           name='task1',
+                           updated_at=None,
+                           created_at=None,
+                           finished_at=None,
+                           state=None,
+                           duration=None,
+                           estimated_duration=10,
+                           metadata=None,
+                           error=None,
+                           args=None,
+                           kwargs=None)
+        mock_request.return_value = {'detail': task_params}
         vector_file = TestFile('t1')
         image_file = TestFile('i1')
         label = 'c1'
-        self.est.add_labels_for(vector_file, image_file, label)
+        rv = self.est.add_labels_for(vector_file, image_file, label=label)
         body = dict(vector_file=vector_file.path,
                     related_file=image_file.path,
                     label=label,
@@ -146,7 +159,7 @@ class EstimatorTest(unittest.TestCase):
         mock_request.assert_called_once_with('post',
                                              '/estimators/u1/load_labels/',
                                              body)
-        self.assertIsInstance(self.est, Estimator)
+        self.assertEqual(rv.id, 'task1')
 
     @patch("dymaxionlabs.models.request")
     def test_train(self, mock_request):
