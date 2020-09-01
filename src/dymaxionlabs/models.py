@@ -193,9 +193,11 @@ class Estimator:
         :param File image_file: the corresponding image file to be annotated.
         :param str label: the class/label to use for the annotations
         :param str label_property: the property that stores the label value of each annotation
-        :returns: itself
+        :returns: a dict with info about the new AnnotationJob
 
         """
+        from .tasks import Task
+
         if not label and not label_property:
             raise ValueError(
                 "Label and label_property cannot be null simultaneously")
@@ -203,8 +205,10 @@ class Estimator:
                     related_file=image_file.path,
                     label=label,
                     label_property=label_property)
-        request('post', f'{self.base_path}/{self.uuid}/load_labels/', body)
-        return self
+        response = request('post',
+                           f'{self.base_path}/{self.uuid}/load_labels/', body)
+        task = Task._from_attributes(**response['detail'])
+        return task
 
     def train(self):
         """Start a training job using this estimator.
