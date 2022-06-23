@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "dymaxionlabs"
+version = "1.0.0-alpha.0"
+description = "Python client for Dymaxion Labs Platform API"
+authors = ["Damián Silvani <munshkr@gmail.com>"]
+license = "apache-2.0"
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.11"
+tqdm = "^4.64.0"
+google-resumable-media = "0.5.1"
+requests = "^2.28.0"
+urllib3 = "^1.26.9"
+
+[tool.poetry.dev-dependencies]
+pre-commit = "^2.19.0"
+rope = "^1.2.0"
+yapf = "^0.32.0"
+Sphinx = "^5.0.2"
+sphinx-rtd-theme = "^1.0.0"
+pytest = "^7.1.2"
+pytest-cov = "^3.0.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
