@@ -350,7 +350,7 @@ class Model:
         from .tasks import Task
 
         path = _get_model_base_path(username=self.owner, modelname=self.name, version=self.version)
-        attrs = request('post', f'{path}predict/', body=dict(parameters=kwargs | {'input_dir': input_dir}))
+        attrs = request('post', f'{path}predict/', body=dict(parameters={'input_dir': input_dir, **kwargs}))
         return Task._from_attributes(**attrs)
 
     def __repr__(self):
