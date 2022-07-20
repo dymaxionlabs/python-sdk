@@ -101,7 +101,7 @@ class Task:
     def wait_until_finished(self, interval: float = 5, timeout: float = 60 * 60):
         timeout_start = time.time()
         is_valid = time.time() < timeout_start + timeout
-        while self.is_running and is_valid:
+        while self.is_running() and is_valid:
             time.sleep(interval)
 
     def has_artifacts(self):
