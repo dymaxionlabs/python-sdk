@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dymaxionlabs"
-version = "1.0.0-alpha.0"
+version = "1.0.0-alpha.1"
 description = "Python client for Dymaxion Labs Platform API"
 authors = ["Damián Silvani <munshkr@gmail.com>"]
 license = "apache-2.0"
