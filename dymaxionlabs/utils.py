@@ -55,7 +55,7 @@ class NotFoundError(Exception):
 
 def get_api_url():
     """Get current API URL from environment"""
-    return os.getenv("DYM_API_URL", "https://api.dymaxionlabs.com")
+    return os.getenv("DYM_API_URL", "https://api.dymaxionlabs.com/v1")
 
 
 def get_api_key():
