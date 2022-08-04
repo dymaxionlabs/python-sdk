@@ -75,7 +75,7 @@ def request(method,
     """Makes an HTTP request to the API"""
     headers = {'Authorization': 'Api-Key {}'.format(get_api_key()), **headers}
     request_method = getattr(session, method)
-    url = urljoin(get_api_url(), API_VERSION, path)
+    url = urljoin(get_api_url(), f"/{API_VERSION}{path}")
     if files:
         response = request_method(url,
                                   files=files,
