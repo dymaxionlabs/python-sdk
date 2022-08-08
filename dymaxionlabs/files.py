@@ -176,31 +176,5 @@ class File:
         with open(output_file, 'wb') as f:
             f.write(content)
 
-    def tiling(self, output_path, tile_size=500):
-        """Starts an image tiling job on the current file.
-
-        By default, tiles are 500x500, but you can set the ``tile_size`` to a
-        different size.
-
-        ``output_path`` should be a directory path in storage where tiles
-        will be generated.
-
-        :param str output_path: tiles output directory
-        :param int tile_size: tile size (default: 500)
-        :returns: a Task with info about the new tiling job
-        :raises: RuntimeError if output path is None
-        :rtype: Task
-
-        """
-        if not output_path:
-            raise RuntimeError("Output path can not be null")
-        from .tasks import Task
-        body = dict(path=self.path,
-                    output_path=output_path,
-                    tile_size=tile_size)
-        response = request('post', '/estimators/start_tiling_job/', body=body)
-        self.tiling_job = Task._from_attributes(**response['detail'])
-        return self.tiling_job
-
     def __repr__(self):
         return f"<dymaxionlabs.files.File path=\"{self.path}\">"
