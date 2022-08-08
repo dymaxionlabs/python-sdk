@@ -55,13 +55,14 @@ class NotFoundError(Exception):
 
 def get_api_url():
     """Get current API URL from environment"""
-    return os.getenv("DYM_API_URL", "https://api.dymaxionlabs.com")
+    return os.getenv("DYM_API_URL", "https://api.dymaxionlabs.com/")
 
 
 def get_api_key():
     """Get current API Key from environment"""
     return os.environ.get("DYM_API_KEY")
 
+API_VERSION = 'v1'
 
 def request(method,
             path,
@@ -74,7 +75,7 @@ def request(method,
     """Makes an HTTP request to the API"""
     headers = {'Authorization': 'Api-Key {}'.format(get_api_key()), **headers}
     request_method = getattr(session, method)
-    url = urljoin(get_api_url(), path)
+    url = urljoin(get_api_url(), f"/{API_VERSION}{path}")
     if files:
         response = request_method(url,
                                   files=files,
