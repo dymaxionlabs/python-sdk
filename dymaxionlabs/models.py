@@ -76,3 +76,12 @@ class Model:
 
     def __repr__(self):
         return "<Model owner={owner!r} name={name!r} version={version!r}>".format(owner=self.owner, name=self.name, version=self.version)
+
+
+def _get_model_base_path(*, username, modelname=None, version=None):
+    path = f'/users/{username}/models'
+    if modelname:
+        path = f'{path}/{modelname}'
+    if version:
+        path = f'{path}/versions/{version}'
+    return f"{path}/"
